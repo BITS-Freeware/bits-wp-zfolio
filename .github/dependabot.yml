@@ -1,0 +1,9 @@
+# Dependabot opens pull requests for outdated GitHub Actions. Add a composer entry when composer.json lands.
+# Security updates also need Dependabot alerts and security updates turned on under Settings > Advanced Security.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday

@@ -1,0 +1,31 @@
+# VCS and editor
+.git
+.gitattributes
+.gitignore
+.distignore
+.cursor
+.github
+.DS_Store
+Thumbs.db
+
+# Repository docs (not shipped on WordPress.org)
+CLAUDE.md
+SECURITY.md
+
+# Tests and PHPUnit
+tests
+phpunit.xml
+phpunit.xml.dist
+.phpunit.cache
+.phpunit.result.cache
+
+# Build output and tooling
+bin
+dist
+docs
+node_modules
+*.zip
+*.tgz
+
+# Reinstalled production-only in the release zip
+vendor
