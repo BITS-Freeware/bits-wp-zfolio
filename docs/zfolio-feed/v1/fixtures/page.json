@@ -1,0 +1,17 @@
+{
+  "apiVersion": 1,
+  "feedId": "zfd_Q2hhbmdlTWVJbkZpeHR1MA",
+  "id": "pg_mzuwk3debnxw4zlonzsxe2lvmf",
+  "slug": "install",
+  "title": "Install",
+  "description": "Install the tools in three steps.",
+  "parents": ["fl_mfrggzdfmztwq2lknnwg23tpob"],
+  "html": "<h1 id=\"user-content-install\">Install</h1>\n<p>Install the tools in three steps. Start with the <a href=\"#\" class=\"wiki-link\" data-zfolio-slug=\"welcome\">Welcome</a> page, then read <a href=\"#\" class=\"wiki-link\" data-zfolio-slug=\"tuning\" data-zfolio-heading=\"user-content-limits\">Tuning#Limits</a>.</p>\n<h2 id=\"user-content-steps\">Steps</h2>\n<ol>\n<li>Download the package.</li>\n<li>Run <code>setup</code>.</li>\n<li>Check the version.</li>\n</ol>\n<p><img src=\"https://zfolio-images.zuuid.cc/i/ryvb4aqbbsHireHWlPQfxxqDHQJo6YkVYhE9imKt0b8.png\" alt=\"The setup screen\"></p>\n<pre><code class=\"language-sh\"><span class=\"hljs-built_in\">setup</span> --check\n</code></pre>\n<p><math display=\"block\"><semantics><mrow><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding=\"application/x-tex\">E = mc^2</annotation></semantics></math></p>",
+  "headings": [
+    { "level": 1, "text": "Install", "id": "user-content-install" },
+    { "level": 2, "text": "Steps", "id": "user-content-steps" }
+  ],
+  "publishedAt": "2026-11-01T09:00:00.000Z",
+  "updatedAt": "2026-11-07T10:00:00.000Z",
+  "hash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90"
+}

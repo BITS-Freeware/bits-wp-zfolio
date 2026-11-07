@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/BITS-Freeware/bits-wp-zfolio/tree/main/docs/zfolio-feed/v1/schemas/page.schema.json",
+  "title": "zFolio feed page (v1)",
+  "description": "GET /feed/v1/<token>/pages/<id or slug>. Unknown fields may be added within v1: ignore them.",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "feedId",
+    "id",
+    "slug",
+    "title",
+    "description",
+    "parents",
+    "html",
+    "headings",
+    "publishedAt",
+    "updatedAt",
+    "hash"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": 1
+    },
+    "feedId": {
+      "type": "string",
+      "pattern": "^zfd_[A-Za-z0-9_-]{22}$"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^pg_[a-z2-7]{26}$"
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^(?=.{1,200}$)[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "parents": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^fl_[a-z2-7]{26}$"
+      },
+      "description": "The folders the item is in, outermost first; empty at the top."
+    },
+    "html": {
+      "type": "string",
+      "description": "Sanitized HTML within the allowlist named by the manifest's allowlistVersion (kses-allowlist.json)."
+    },
+    "headings": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {
+        "type": "object",
+        "required": [
+          "level",
+          "text",
+          "id"
+        ],
+        "properties": {
+          "level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^user-content-"
+          }
+        }
+      }
+    },
+    "publishedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "lang": {
+      "type": "string",
+      "description": "Optional; not sent yet."
+    }
+  }
+}

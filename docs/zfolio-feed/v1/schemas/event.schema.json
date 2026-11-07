@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/BITS-Freeware/bits-wp-zfolio/tree/main/docs/zfolio-feed/v1/schemas/event.schema.json",
+  "title": "zFolio feed webhook event (v1)",
+  "description": "The body of a webhook POST, signed in the zFolio-Signature header. Unknown fields and types may be added within v1: ignore them.",
+  "type": "object",
+  "required": [
+    "id",
+    "type",
+    "createdAt",
+    "feedId",
+    "apiVersion",
+    "data"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^evt_[A-Za-z0-9_-]{22}$"
+    },
+    "type": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "feedId": {
+      "type": "string",
+      "pattern": "^zfd_[A-Za-z0-9_-]{22}$"
+    },
+    "apiVersion": {
+      "const": 1
+    },
+    "data": {
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "feed.updated"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": [
+              "revision"
+            ],
+            "properties": {
+              "revision": {
+                "type": "integer"
+              },
+              "changed": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^pg_[a-z2-7]{26}$"
+                },
+                "maxItems": 100
+              },
+              "removed": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^pg_[a-z2-7]{26}$"
+                },
+                "maxItems": 100
+              },
+              "truncated": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "feed.page_removed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": [
+              "revision",
+              "pages"
+            ],
+            "properties": {
+              "revision": {
+                "type": "integer"
+              },
+              "pages": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^pg_[a-z2-7]{26}$"
+                },
+                "maxItems": 100
+              },
+              "truncated": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "enum": [
+              "feed.paused",
+              "feed.resumed"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "revision": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "feed.rotated"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": [
+              "what"
+            ],
+            "properties": {
+              "what": {
+                "enum": [
+                  "address",
+                  "secret"
+                ]
+              },
+              "graceUntil": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "previousUntil": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

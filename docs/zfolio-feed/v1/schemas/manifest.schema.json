@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/BITS-Freeware/bits-wp-zfolio/tree/main/docs/zfolio-feed/v1/schemas/manifest.schema.json",
+  "title": "zFolio feed manifest (v1)",
+  "description": "GET /feed/v1/<token>. Unknown fields may be added within v1: ignore them.",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "feedId",
+    "kind",
+    "title",
+    "revision",
+    "updatedAt",
+    "allowlistVersion",
+    "folders",
+    "pages",
+    "nav"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": 1
+    },
+    "feedId": {
+      "type": "string",
+      "pattern": "^zfd_[A-Za-z0-9_-]{22}$"
+    },
+    "kind": {
+      "enum": [
+        "document",
+        "folder"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 1000
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Only grows."
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "allowlistVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "folders": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "parents",
+          "order"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^fl_[a-z2-7]{26}$"
+          },
+          "title": {
+            "type": "string"
+          },
+          "parents": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^fl_[a-z2-7]{26}$"
+            },
+            "description": "The folders the item is in, outermost first; empty at the top."
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "pages": {
+      "type": "array",
+      "maxItems": 2000,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "description",
+          "parents",
+          "order",
+          "updatedAt",
+          "hash"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^pg_[a-z2-7]{26}$"
+          },
+          "slug": {
+            "type": "string",
+            "pattern": "^(?=.{1,200}$)[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "description": {
+            "type": "string"
+          },
+          "parents": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^fl_[a-z2-7]{26}$"
+            },
+            "description": "The folders the item is in, outermost first; empty at the top."
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "lang": {
+            "type": "string",
+            "description": "Optional; not sent yet."
+          }
+        }
+      }
+    },
+    "nav": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "pageId": {
+            "type": "string",
+            "pattern": "^pg_[a-z2-7]{26}$"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "oneOf": [
+          {
+            "required": [
+              "pageId"
+            ]
+          },
+          {
+            "required": [
+              "url"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
