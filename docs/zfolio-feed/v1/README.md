@@ -19,6 +19,7 @@ The plugin's readme may name these:
 - The feed host, `zfolio.zuuid.cc`, and the image host, `zfolio-images.zuuid.cc`, both run by zFolio.
 - zFolio's [Terms of Use](https://bristleconeit.com/policies/terms/zsuite/zfolio/) and [Privacy Policy](https://bristleconeit.com/policies/privacy/zsuite/zfolio/).
 - What the plugin sends: requests for the feed and its pages, with its `User-Agent`, and answers to webhooks. Nothing about the site's visitors.
+- Images: unless the site copies them into its media library, pages show them from `zfolio-images.zuuid.cc`, so each visitor's browser loads them from zFolio's image host, which receives the visitor's IP address and browser details as any web host does.
 
 ## Addresses
 
