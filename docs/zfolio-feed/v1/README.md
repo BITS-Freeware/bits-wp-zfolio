@@ -109,6 +109,7 @@ zFolio renders and sanitizes every page itself; WordPress never sees Markdown. S
 - MathML presentation elements only: `math`, `semantics`, `annotation` (with `encoding="application/x-tex"` only), `mrow`, `mi`, `mn`, `mo`, `ms`, `mtext`, `mspace`, `msup`, `msub`, `msubsup`, `mfrac`, `msqrt`, `mroot`, `mover`, `munder`, `munderover`, `mtable`, `mtr`, `mtd`, `mstyle`, `mpadded`, `mphantom`, `menclose`, with presentation attributes only. A site that would rather not show MathML can strip it and print the TeX annotation.
 - Ids and names start with `user-content-`.
 - Every `img` has an `alt` (empty when the author wrote none). `width` and `height` are in the allowlist but not written yet.
+- Images keep loading while a feed is paused. Once a feed is revoked, its images are deleted when nothing else of the owner's shows them, so a site that must keep showing a page's images after that should copy them into its media library.
 - A page's optional `lang`, and `lang` on elements, are in the schema and the allowlist but not written yet.
 - Classes zFolio writes: `wiki-link`, `wiki-link-missing`, `content-block`, `footnotes`, `data-footnote-backref`, `task-list-item`, `contains-task-list`, `sr-only`, `language-*` on code, and `hljs-*` on highlighted code.
 
