@@ -1,0 +1,692 @@
+{
+  "allowlistVersion": 1,
+  "about": "The HTML a zFolio feed page may hold (feed API v1). Elements map to their attributes: true for any value, or the values and patterns (regular expressions over the whole value) allowed. \"*\" lists attributes any element may have. Reserved attributes are allowed now but not written yet. Ids and names start with \"user-content-\".",
+  "elements": {
+    "a": {
+      "aria-describedby": true,
+      "aria-label": true,
+      "aria-labelledby": true,
+      "class": {
+        "values": [
+          "data-footnote-backref",
+          "wiki-link"
+        ]
+      },
+      "data-footnote-backref": true,
+      "data-footnote-ref": true,
+      "data-zfolio-heading": true,
+      "data-zfolio-slug": true,
+      "href": true,
+      "data-zfolio-url": {
+        "patterns": [
+          "^https://"
+        ]
+      },
+      "data-zfolio-embed": true
+    },
+    "annotation": {
+      "encoding": {
+        "values": [
+          "application/x-tex"
+        ]
+      }
+    },
+    "b": {},
+    "blockquote": {
+      "cite": true
+    },
+    "br": {},
+    "code": {
+      "class": {
+        "patterns": [
+          "^language-."
+        ]
+      }
+    },
+    "dd": {},
+    "del": {
+      "cite": true
+    },
+    "details": {},
+    "div": {
+      "itemscope": true,
+      "itemtype": true
+    },
+    "dl": {
+      "aria-describedby": true,
+      "aria-label": true,
+      "aria-labelledby": true
+    },
+    "dt": {},
+    "em": {},
+    "h1": {},
+    "h2": {
+      "class": {
+        "values": [
+          "sr-only"
+        ]
+      }
+    },
+    "h3": {},
+    "h4": {},
+    "h5": {},
+    "h6": {},
+    "hr": {},
+    "i": {},
+    "img": {
+      "aria-describedby": true,
+      "aria-label": true,
+      "aria-labelledby": true,
+      "longdesc": true,
+      "src": true,
+      "width": {
+        "patterns": [
+          "^[0-9]{1,5}$"
+        ]
+      },
+      "height": {
+        "patterns": [
+          "^[0-9]{1,5}$"
+        ]
+      }
+    },
+    "input": {
+      "disabled": true,
+      "type": {
+        "values": [
+          "checkbox"
+        ]
+      }
+    },
+    "ins": {
+      "cite": true
+    },
+    "kbd": {},
+    "li": {
+      "class": {
+        "values": [
+          "task-list-item"
+        ]
+      }
+    },
+    "math": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "menclose": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "mfrac": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "mi": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "mn": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "mo": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "mover": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "mpadded": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "mphantom": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "mroot": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "mrow": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "ms": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "mspace": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "msqrt": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "mstyle": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "msub": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "msubsup": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "msup": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "mtable": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "mtd": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "mtext": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "mtr": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "munder": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "munderover": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "ol": {
+      "aria-describedby": true,
+      "aria-label": true,
+      "aria-labelledby": true,
+      "class": {
+        "values": [
+          "contains-task-list"
+        ]
+      }
+    },
+    "p": {},
+    "picture": {},
+    "pre": {},
+    "q": {
+      "cite": true
+    },
+    "rp": {},
+    "rt": {},
+    "ruby": {},
+    "s": {},
+    "samp": {},
+    "section": {
+      "class": {
+        "values": [
+          "footnotes",
+          "content-block"
+        ]
+      },
+      "data-footnotes": true
+    },
+    "semantics": {
+      "accent": true,
+      "accentunder": true,
+      "columnalign": true,
+      "display": true,
+      "displaystyle": true,
+      "fence": true,
+      "linethickness": true,
+      "lspace": true,
+      "mathvariant": true,
+      "rowalign": true,
+      "rspace": true,
+      "scriptlevel": true,
+      "separator": true,
+      "stretchy": true
+    },
+    "source": {
+      "srcset": true
+    },
+    "span": {
+      "class": {
+        "values": [
+          "wiki-link-missing"
+        ],
+        "patterns": [
+          "^hljs-[a-z][a-z_-]*$"
+        ]
+      }
+    },
+    "strike": {},
+    "strong": {},
+    "sub": {},
+    "summary": {
+      "aria-describedby": true,
+      "aria-label": true,
+      "aria-labelledby": true
+    },
+    "sup": {},
+    "table": {
+      "aria-describedby": true,
+      "aria-label": true,
+      "aria-labelledby": true
+    },
+    "tbody": {},
+    "td": {},
+    "tfoot": {},
+    "th": {},
+    "thead": {},
+    "tr": {},
+    "tt": {},
+    "ul": {
+      "aria-describedby": true,
+      "aria-label": true,
+      "aria-labelledby": true,
+      "class": {
+        "values": [
+          "contains-task-list"
+        ]
+      }
+    },
+    "var": {}
+  },
+  "globalAttributes": {
+    "abbr": true,
+    "accept": true,
+    "acceptcharset": true,
+    "accesskey": true,
+    "action": true,
+    "align": true,
+    "alt": true,
+    "axis": true,
+    "border": true,
+    "cellpadding": true,
+    "cellspacing": true,
+    "char": true,
+    "charoff": true,
+    "charset": true,
+    "checked": true,
+    "clear": true,
+    "color": true,
+    "cols": true,
+    "colspan": true,
+    "compact": true,
+    "coords": true,
+    "datetime": true,
+    "dir": true,
+    "enctype": true,
+    "for": true,
+    "frame": true,
+    "headers": true,
+    "height": true,
+    "hreflang": true,
+    "hspace": true,
+    "id": true,
+    "ismap": true,
+    "itemprop": true,
+    "label": true,
+    "lang": {
+      "patterns": [
+        "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$"
+      ]
+    },
+    "maxlength": true,
+    "media": true,
+    "method": true,
+    "multiple": true,
+    "name": true,
+    "nohref": true,
+    "noshade": true,
+    "nowrap": true,
+    "open": true,
+    "prompt": true,
+    "readonly": true,
+    "rev": true,
+    "rows": true,
+    "rowspan": true,
+    "rules": true,
+    "scope": true,
+    "selected": true,
+    "shape": true,
+    "size": true,
+    "span": true,
+    "start": true,
+    "summary": true,
+    "tabindex": true,
+    "title": true,
+    "usemap": true,
+    "valign": true,
+    "value": true,
+    "width": true
+  },
+  "protocols": {
+    "cite": [
+      "http",
+      "https"
+    ],
+    "href": [
+      "http",
+      "https",
+      "irc",
+      "ircs",
+      "mailto",
+      "xmpp"
+    ],
+    "longdesc": [
+      "http",
+      "https"
+    ],
+    "src": [
+      "http",
+      "https"
+    ]
+  },
+  "required": {
+    "input": {
+      "disabled": true,
+      "type": "checkbox"
+    }
+  },
+  "reserved": [
+    "a[data-zfolio-url]",
+    "a[data-zfolio-embed]",
+    "img[width]",
+    "img[height]",
+    "*[lang]"
+  ]
+}

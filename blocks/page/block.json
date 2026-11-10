@@ -1,0 +1,21 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "bristlecone-zfolio/page",
+	"title": "zFolio Page",
+	"category": "embed",
+	"icon": "media-document",
+	"description": "Show one page from a zFolio feed.",
+	"keywords": [ "zfolio", "documentation", "feed" ],
+	"textdomain": "bristlecone-zfolio",
+	"attributes": {
+		"connection": { "type": "string", "default": "" },
+		"page": { "type": "string", "default": "" }
+	},
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ],
+		"spacing": { "margin": true, "padding": true }
+	},
+	"editorScript": "bristlecone-zfolio-page-editor"
+}
