@@ -1,4 +1,4 @@
-# Dependabot opens pull requests for outdated GitHub Actions. Add a composer entry when composer.json lands.
+# Dependabot opens pull requests for outdated GitHub Actions and Composer dev dependencies.
 # Security updates also need Dependabot alerts and security updates turned on under Settings > Advanced Security.
 version: 2
 updates:
@@ -7,3 +7,12 @@ updates:
     schedule:
       interval: weekly
       day: monday
+  - package-ecosystem: composer
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    ignore:
+      # Tests run against the oldest supported WordPress on purpose.
+      - dependency-name: roots/wordpress-no-content
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']

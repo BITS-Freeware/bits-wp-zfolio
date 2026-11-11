@@ -1,0 +1,35 @@
+{
+  "name": "bristlecone/bristlecone-zfolio",
+  "description": "Show zFolio documents and folders on a WordPress site.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "homepage": "https://bristleconeit.com/bristlecone-zfolio",
+  "support": {
+    "issues": "https://github.com/BITS-Freeware/bits-wp-zfolio/issues",
+    "source": "https://github.com/BITS-Freeware/bits-wp-zfolio"
+  },
+  "require": {
+    "php": ">=8.3"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.5",
+    "roots/wordpress-no-content": "6.4.*"
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Bristlecone\\Zfolio\\Tests\\": "tests/"
+    }
+  },
+  "config": {
+    "sort-packages": true,
+    "platform": {
+      "php": "8.3.0"
+    },
+    "allow-plugins": {
+      "roots/wordpress-core-installer": true
+    }
+  },
+  "scripts": {
+    "test": "phpunit"
+  }
+}
