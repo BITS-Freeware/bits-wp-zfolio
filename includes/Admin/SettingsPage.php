@@ -18,6 +18,8 @@ use Bristlecone\Zfolio\Feed\Response;
 use Bristlecone\Zfolio\Feed\Validator;
 use Bristlecone\Zfolio\Store;
 use Bristlecone\Zfolio\Sync;
+use Bristlecone\Zfolio\Webhook\Receiver;
+use Bristlecone\Zfolio\Webhook\Signature;
 
 /**
  * Connections list, add/edit form, and actions (Test connection, Refresh now,
@@ -228,12 +230,13 @@ final class SettingsPage {
 	private static function render_form( ?array $connection ): void {
 		$is_new     = null === $connection;
 		$connection = $connection ?? array(
-			'id'       => '',
-			'label'    => '',
-			'address'  => '',
-			'interval' => 15,
-			'takedown' => 'hide',
-			'math'     => 'mathml',
+			'id'             => '',
+			'label'          => '',
+			'address'        => '',
+			'interval'       => 15,
+			'takedown'       => 'hide',
+			'math'           => 'mathml',
+			'webhook_secret' => '',
 		);
 
 		echo '<p><a href="' . esc_url( self::url() ) . '">&larr; ' . esc_html__( 'All connections', 'bristlecone-zfolio' ) . '</a></p>';
@@ -275,6 +278,9 @@ final class SettingsPage {
 		echo '</fieldset></td></tr>';
 
 		echo '</tbody></table>';
+
+		self::render_webhook_fields( $connection, $is_new );
+
 		submit_button( $is_new ? __( 'Add Connection', 'bristlecone-zfolio' ) : __( 'Save Changes', 'bristlecone-zfolio' ) );
 		echo '</form>';
 
@@ -283,6 +289,59 @@ final class SettingsPage {
 			self::action_button( 'clear', (string) $connection['id'], __( 'Clear Content', 'bristlecone-zfolio' ), '', __( 'Delete this connection’s stored pages and fetch them again?', 'bristlecone-zfolio' ) );
 			self::action_button( 'delete', (string) $connection['id'], __( 'Delete Connection', 'bristlecone-zfolio' ), 'button-link-delete', __( 'Delete this connection and its stored pages? Blocks and shortcodes that use it will show nothing.', 'bristlecone-zfolio' ) );
 		}
+	}
+
+	/**
+	 * The Webhooks part of the form.
+	 *
+	 * @param array<string,mixed> $connection Connection.
+	 * @param bool                $is_new     Whether it is unsaved.
+	 */
+	private static function render_webhook_fields( array $connection, bool $is_new ): void {
+		echo '<h2>' . esc_html__( 'Webhooks (Optional)', 'bristlecone-zfolio' ) . '</h2>';
+		echo '<p>' . esc_html__( 'With a webhook, zFolio tells your site the moment you choose Update, instead of waiting for the next check. Scheduled checks keep running either way. Your site must be reachable from the internet over HTTPS.', 'bristlecone-zfolio' ) . '</p>';
+
+		if ( $is_new ) {
+			echo '<p class="description">' . esc_html__( 'Add the connection first. Its webhook address appears here once it is saved.', 'bristlecone-zfolio' ) . '</p>';
+			return;
+		}
+
+		$id     = (string) $connection['id'];
+		$url    = Receiver::url( $id );
+		$secret = (string) $connection['webhook_secret'];
+		$state  = Connections::state( $id );
+
+		echo '<table class="form-table" role="presentation"><tbody>';
+
+		echo '<tr><th scope="row"><label for="zfolio-webhook-url">' . esc_html__( 'Webhook Address', 'bristlecone-zfolio' ) . '</label></th><td>';
+		echo '<input type="text" class="large-text code" id="zfolio-webhook-url" value="' . esc_attr( $url ) . '" readonly onfocus="this.select()">';
+		echo '<p class="description">' . esc_html__( 'In zFolio, open the feed’s webhooks, add an endpoint, and paste this address.', 'bristlecone-zfolio' ) . '</p>';
+		if ( ! str_starts_with( $url, 'https://' ) ) {
+			echo '<p class="description"><strong>' . esc_html__( 'This site doesn’t use HTTPS, so zFolio can’t send it webhooks. Scheduled checks still work.', 'bristlecone-zfolio' ) . '</strong></p>';
+		}
+		echo '</td></tr>';
+
+		echo '<tr><th scope="row"><label for="zfolio-webhook-secret">' . esc_html__( 'Webhook Secret', 'bristlecone-zfolio' ) . '</label></th><td>';
+		if ( '' !== $secret ) {
+			echo '<p><code>' . esc_html( Signature::mask( $secret ) ) . '</code></p>';
+		}
+		echo '<input type="password" class="large-text code" id="zfolio-webhook-secret" name="webhook_secret" value="" autocomplete="off" spellcheck="false">';
+		echo '<p class="description">' . esc_html( '' === $secret ? __( 'Paste the secret zFolio shows when you add the endpoint. It starts with zfwh_ and is shown only once.', 'bristlecone-zfolio' ) : __( 'Leave empty to keep the current secret. Paste the new one if you rolled it in zFolio.', 'bristlecone-zfolio' ) ) . '</p>';
+		if ( '' !== $secret ) {
+			echo '<p><label><input type="checkbox" name="webhook_remove" value="1"> ' . esc_html__( 'Turn webhooks off for this connection', 'bristlecone-zfolio' ) . '</label></p>';
+		}
+		echo '</td></tr>';
+
+		if ( '' !== $secret ) {
+			echo '<tr><th scope="row">' . esc_html__( 'Last Webhook', 'bristlecone-zfolio' ) . '</th><td>';
+			echo esc_html( self::when( (int) $state['last_webhook'] ) );
+			if ( '' !== (string) $state['last_webhook_type'] ) {
+				echo ' <code>' . esc_html( (string) $state['last_webhook_type'] ) . '</code>';
+			}
+			echo '<p class="description">' . esc_html__( 'Choose Test on the endpoint in zFolio to check that webhooks arrive.', 'bristlecone-zfolio' ) . '</p></td></tr>';
+		}
+
+		echo '</tbody></table>';
 	}
 
 	/**
@@ -410,6 +469,8 @@ final class SettingsPage {
 		$interval    = isset( $_POST['interval'] ) ? absint( $_POST['interval'] ) : 15;
 		$takedown    = isset( $_POST['takedown'] ) ? sanitize_key( wp_unslash( $_POST['takedown'] ) ) : 'hide';
 		$math        = isset( $_POST['math'] ) ? sanitize_key( wp_unslash( $_POST['math'] ) ) : 'mathml';
+		$raw_secret  = isset( $_POST['webhook_secret'] ) ? trim( (string) wp_unslash( $_POST['webhook_secret'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- validated by Signature::valid_secret().
+		$remove_hook = ! empty( $_POST['webhook_remove'] );
 		// phpcs:enable
 
 		$existing = '' !== $id ? Connections::get( $id ) : null;
@@ -431,23 +492,42 @@ final class SettingsPage {
 			self::redirect( __( 'A feed address is required.', 'bristlecone-zfolio' ), false, array( 'edit' => 'new' ) );
 		}
 
+		$secret         = (string) ( $existing['webhook_secret'] ?? '' );
+		$secret_changed = false;
+
+		if ( $remove_hook ) {
+			$secret = '';
+		} elseif ( '' !== $raw_secret ) {
+			if ( ! Signature::valid_secret( $raw_secret ) ) {
+				self::redirect( __( 'That doesn’t look like a zFolio webhook secret. It should start with zfwh_.', 'bristlecone-zfolio' ), false, array( 'edit' => '' !== $id ? $id : 'new' ) );
+			}
+
+			$secret_changed = $raw_secret !== $secret;
+			$secret         = $raw_secret;
+		}
+
 		$new = '' === $id;
 		$id  = $new ? Connections::new_id() : $id;
 
 		Connections::save(
 			$id,
 			array(
-				'label'    => $label,
-				'address'  => $address,
-				'interval' => $interval,
-				'takedown' => $takedown,
-				'math'     => $math,
+				'label'          => $label,
+				'address'        => $address,
+				'interval'       => $interval,
+				'takedown'       => $takedown,
+				'math'           => $math,
+				'webhook_secret' => $secret,
 			)
 		);
 
 		if ( $changed ) {
 			// A rotated address serves the same feed; keep content, recheck at once.
-			Connections::update_state( $id, array( 'etag' => '', 'last_error' => '' ) );
+			Connections::update_state( $id, array( 'etag' => '', 'last_error' => '', 'address_rotated' => 0 ) );
+		}
+
+		if ( $secret_changed || '' === $secret ) {
+			Connections::update_state( $id, array( 'secret_rotated' => 0 ) );
 		}
 
 		Cache::purge_connection( $id );
@@ -546,6 +626,22 @@ final class SettingsPage {
 			} elseif ( '' !== $state['sunset'] || '' !== $state['deprecation'] ) {
 				/* translators: %s: connection name. */
 				$lines[] = sprintf( __( '%s: zFolio will retire this version of its feed. Update zFolio for WordPress before then.', 'bristlecone-zfolio' ), $name );
+			}
+
+			if ( (int) $state['address_rotated'] > 0 ) {
+				$lines[] = (int) $state['address_rotated'] > time()
+					/* translators: 1: connection name, 2: date. */
+					? sprintf( __( '%1$s: the owner rotated the feed address in zFolio. Paste the new address before %2$s, when the old one stops working.', 'bristlecone-zfolio' ), $name, wp_date( get_option( 'date_format' ), (int) $state['address_rotated'] ) )
+					/* translators: %s: connection name. */
+					: sprintf( __( '%s: the owner rotated the feed address in zFolio. Paste the new address.', 'bristlecone-zfolio' ), $name );
+			}
+
+			if ( (int) $state['secret_rotated'] > 0 && '' !== $connection['webhook_secret'] ) {
+				$lines[] = (int) $state['secret_rotated'] > time()
+					/* translators: 1: connection name, 2: date. */
+					? sprintf( __( '%1$s: the webhook secret was rolled in zFolio. Paste the new secret before %2$s, or webhooks will stop arriving.', 'bristlecone-zfolio' ), $name, wp_date( get_option( 'date_format' ), (int) $state['secret_rotated'] ) )
+					/* translators: %s: connection name. */
+					: sprintf( __( '%s: the webhook secret was rolled in zFolio. Paste the new secret.', 'bristlecone-zfolio' ), $name );
 			}
 
 			if ( 'paused' === $state['status'] || 'revoked' === $state['status'] ) {
