@@ -1,0 +1,37 @@
+{
+  "about": "Webhook signature test vectors (feed API v1). signature = lowercase hex HMAC-SHA256, keyed with the secret string's UTF-8 bytes, over t + \".\" + body, where body is the raw request body as sent.",
+  "vectors": [
+    {
+      "name": "short body",
+      "secret": "zfwh_0123456789abcdefghijklmnopqrstuvwxyzABCDEFG",
+      "t": 1794000000,
+      "body": "{\"id\":\"evt_test\"}",
+      "signature": "d92c01018b7af0a59010b4fd4ca5638ef9f8a450f303a590e6b81d6181c8138d",
+      "header": "t=1794000000,v1=d92c01018b7af0a59010b4fd4ca5638ef9f8a450f303a590e6b81d6181c8138d"
+    },
+    {
+      "name": "feed.updated event",
+      "secret": "zfwh_0123456789abcdefghijklmnopqrstuvwxyzABCDEFG",
+      "t": 1794045600,
+      "body": "{\"id\":\"evt_c2FtcGxlRXZlbnQwMDAwMQ\",\"type\":\"feed.updated\",\"createdAt\":\"2026-11-07T11:00:00.000Z\",\"feedId\":\"zfd_Q2hhbmdlTWVJbkZpeHR1MA\",\"apiVersion\":1,\"data\":{\"revision\":12,\"changed\":[\"pg_abcdefghijklmnopqrstuvwxyz\"],\"removed\":[]}}",
+      "signature": "8144e35a6d95f45a64f9ac564338b8719ee1c7e1451f5be372237f64c1540ae0",
+      "header": "t=1794045600,v1=8144e35a6d95f45a64f9ac564338b8719ee1c7e1451f5be372237f64c1540ae0"
+    },
+    {
+      "name": "non-ASCII body",
+      "secret": "zfwh_0123456789abcdefghijklmnopqrstuvwxyzABCDEFG",
+      "t": 1794045600,
+      "body": "{\"note\":\"café ✓\"}",
+      "signature": "53e19a73598fb854529f4d63d6a092a09c9cf86512c907db312bae05c5ff7b73",
+      "header": "t=1794045600,v1=53e19a73598fb854529f4d63d6a092a09c9cf86512c907db312bae05c5ff7b73"
+    }
+  ],
+  "rolled": {
+    "name": "secret rolled: signed with the new secret, then the previous one",
+    "secret": "zfwh_ZYXWVUTSRQPONMLKJIHGFEDCBA9876543210zyxwv-_",
+    "previousSecret": "zfwh_0123456789abcdefghijklmnopqrstuvwxyzABCDEFG",
+    "t": 1794045600,
+    "body": "{\"id\":\"evt_c2FtcGxlRXZlbnQwMDAwMQ\",\"type\":\"feed.updated\",\"createdAt\":\"2026-11-07T11:00:00.000Z\",\"feedId\":\"zfd_Q2hhbmdlTWVJbkZpeHR1MA\",\"apiVersion\":1,\"data\":{\"revision\":12,\"changed\":[\"pg_abcdefghijklmnopqrstuvwxyz\"],\"removed\":[]}}",
+    "header": "t=1794045600,v1=393a482c7e9a3a36283956a1395b76023c1f095a003b46212c92c7bc1c408dfc,v1=8144e35a6d95f45a64f9ac564338b8719ee1c7e1451f5be372237f64c1540ae0"
+  }
+}

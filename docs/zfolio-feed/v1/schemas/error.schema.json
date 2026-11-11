@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/BITS-Freeware/bits-wp-zfolio/tree/main/docs/zfolio-feed/v1/schemas/error.schema.json",
+  "title": "zFolio feed error (v1)",
+  "description": "The JSON body of a 404 (code not_found, paused, or revoked) or a 410 for a retired version (code gone). A 429 is plain text with Retry-After.",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "code"
+  ],
+  "properties": {
+    "apiVersion": {
+      "type": "integer"
+    },
+    "code": {
+      "enum": [
+        "not_found",
+        "paused",
+        "revoked",
+        "gone"
+      ]
+    },
+    "message": {
+      "type": "string"
+    },
+    "currentVersion": {
+      "type": "integer"
+    },
+    "docs": {
+      "type": "string",
+      "format": "uri"
+    }
+  },
+  "if": {
+    "properties": {
+      "code": {
+        "const": "gone"
+      }
+    }
+  },
+  "then": {
+    "required": [
+      "currentVersion",
+      "docs"
+    ]
+  },
+  "else": {
+    "required": [
+      "message"
+    ]
+  }
+}

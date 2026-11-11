@@ -1,0 +1,46 @@
+{
+  "apiVersion": 1,
+  "feedId": "zfd_Q2hhbmdlTWVJbkZpeHR1MA",
+  "kind": "folder",
+  "title": "Field Guide",
+  "revision": 12,
+  "updatedAt": "2026-11-07T11:00:00.000Z",
+  "allowlistVersion": 1,
+  "folders": [
+    { "id": "fl_mfrggzdfmztwq2lknnwg23tpob", "title": "Setup", "parents": [], "order": 0 },
+    { "id": "fl_onxw2zjanbqxe5dfmfzgk3djmv", "title": "Advanced", "parents": ["fl_mfrggzdfmztwq2lknnwg23tpob"], "order": 1 }
+  ],
+  "pages": [
+    {
+      "id": "pg_nbswy3dpeb3w64tmmqqgc3lfmq",
+      "slug": "welcome",
+      "title": "Welcome",
+      "description": "What this guide covers and how to use it.",
+      "parents": [],
+      "order": 0,
+      "updatedAt": "2026-11-06T09:30:00.000Z",
+      "hash": "3f5b6c1a9e0d47f28b6a1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f"
+    },
+    {
+      "id": "pg_mzuwk3debnxw4zlonzsxe2lvmf",
+      "slug": "install",
+      "title": "Install",
+      "description": "Install the tools in three steps.",
+      "parents": ["fl_mfrggzdfmztwq2lknnwg23tpob"],
+      "order": 1,
+      "updatedAt": "2026-11-07T10:00:00.000Z",
+      "hash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90"
+    },
+    {
+      "id": "pg_orsxg5banvqxi2dnn5zgk3tpoj",
+      "slug": "tuning",
+      "title": "Tuning",
+      "description": "",
+      "parents": ["fl_mfrggzdfmztwq2lknnwg23tpob", "fl_onxw2zjanbqxe5dfmfzgk3djmv"],
+      "order": 2,
+      "updatedAt": "2026-11-07T10:45:00.000Z",
+      "hash": "0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c4b5a69788796a5b4c3d2e1f0"
+    }
+  ],
+  "nav": []
+}
