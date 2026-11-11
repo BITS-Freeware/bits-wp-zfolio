@@ -112,21 +112,25 @@ final class Connections {
 		$state = self::all_state()[ $id ] ?? array();
 
 		return $state + array(
-			'status'        => 'new',
-			'feed_id'       => '',
-			'title'         => '',
-			'kind'          => '',
-			'revision'      => -1,
-			'etag'          => '',
-			'folders'       => array(),
-			'last_checked'  => 0,
-			'last_changed'  => 0,
-			'last_error'    => '',
-			'retry_until'   => 0,
-			'deprecation'   => '',
-			'sunset'        => '',
-			'gone_current'  => 0,
-			'pending'       => false,
+			'status'            => 'new',
+			'feed_id'           => '',
+			'title'             => '',
+			'kind'              => '',
+			'revision'          => -1,
+			'etag'              => '',
+			'folders'           => array(),
+			'last_checked'      => 0,
+			'last_changed'      => 0,
+			'last_error'        => '',
+			'retry_until'       => 0,
+			'deprecation'       => '',
+			'sunset'            => '',
+			'gone_current'      => 0,
+			'pending'           => false,
+			'last_webhook'      => 0,
+			'last_webhook_type' => '',
+			'address_rotated'   => 0,
+			'secret_rotated'    => 0,
 		);
 	}
 
@@ -162,11 +166,12 @@ final class Connections {
 	 */
 	private static function with_defaults( array $connection ): array {
 		$connection += array(
-			'label'    => '',
-			'address'  => '',
-			'interval' => 15,
-			'takedown' => 'hide',
-			'math'     => 'mathml',
+			'label'          => '',
+			'address'        => '',
+			'interval'       => 15,
+			'takedown'       => 'hide',
+			'math'           => 'mathml',
+			'webhook_secret' => '',
 		);
 
 		if ( ! in_array( (int) $connection['interval'], self::INTERVALS, true ) ) {
@@ -176,6 +181,10 @@ final class Connections {
 		$connection['interval'] = (int) $connection['interval'];
 		$connection['takedown'] = 'keep' === $connection['takedown'] ? 'keep' : 'hide';
 		$connection['math']     = 'tex' === $connection['math'] ? 'tex' : 'mathml';
+
+		if ( ! Webhook\Signature::valid_secret( (string) $connection['webhook_secret'] ) ) {
+			$connection['webhook_secret'] = '';
+		}
 
 		return $connection;
 	}
