@@ -202,6 +202,13 @@ final class Sync {
 
 		if ( ! $complete ) {
 			Cron::schedule( $id, $failed > 0 ? 300 : 30 );
+		} else {
+			/**
+			 * Fires when a connection's stored pages match its feed.
+			 *
+			 * @param string $id Connection id.
+			 */
+			do_action( 'bristlecone_zfolio_synced', $id );
 		}
 
 		/* translators: 1: pages updated, 2: pages removed. */

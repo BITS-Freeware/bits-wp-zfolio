@@ -43,6 +43,7 @@ final class Plugin {
 		Block::register();
 		Rest::register();
 		Webhook\Receiver::register();
+		Mirror\Mirror::register();
 
 		if ( is_admin() ) {
 			SettingsPage::register();
@@ -54,6 +55,7 @@ final class Plugin {
 	 */
 	public static function activate(): void {
 		Store::maybe_install();
+		Mirror\Mirror::request_flush();
 	}
 
 	/**
@@ -61,5 +63,7 @@ final class Plugin {
 	 */
 	public static function deactivate(): void {
 		wp_unschedule_hook( Cron::HOOK );
+		wp_unschedule_hook( Mirror\Mirror::HOOK );
+		flush_rewrite_rules( false );
 	}
 }

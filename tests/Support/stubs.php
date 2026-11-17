@@ -17,3 +17,5 @@ function wp_allowed_protocols() { return array( 'http', 'https', 'mailto' ); }
 function get_option( $name, $default = false ) { return $default; }
 function is_wp_error( $thing ) { return false; }
 function apply_shortcodes( $content ) { return $content; }
+function mbstring_binary_safe_encoding( $reset = false ) {}
+function reset_mbstring_encoding() {}

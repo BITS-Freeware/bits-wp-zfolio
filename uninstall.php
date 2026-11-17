@@ -31,7 +31,17 @@ function bristlecone_zfolio_uninstall_site(): void {
 	}
 
 	delete_post_meta_by_key( '_bristlecone_zfolio_ref' );
+
+	$bristlecone_zfolio_posts = get_posts( array( 'post_type' => 'bristlecone_zfolio', 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids', 'no_found_rows' => true ) );
+	foreach ( $bristlecone_zfolio_posts as $bristlecone_zfolio_post ) {
+		wp_delete_post( (int) $bristlecone_zfolio_post, true );
+	}
+
+	foreach ( array( 'bristlecone_zfolio_mirror_base', 'bristlecone_zfolio_mirror_moved', 'bristlecone_zfolio_flush_rewrite' ) as $bristlecone_zfolio_option ) {
+		delete_option( $bristlecone_zfolio_option );
+	}
 	wp_unschedule_hook( 'bristlecone_zfolio_poll' );
+	wp_unschedule_hook( 'bristlecone_zfolio_mirror' );
 }
 
 if ( is_multisite() ) {
