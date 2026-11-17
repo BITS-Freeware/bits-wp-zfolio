@@ -87,7 +87,8 @@ final class Response {
 		}
 
 		if ( 404 === $status ) {
-			$code = is_array( $json ) && is_string( $json['code'] ?? null ) ? $json['code'] : 'not_found';
+			// Only a well-formed v1 error body can take content down.
+			$code = is_array( $json ) && 1 === ( $json['apiVersion'] ?? null ) && is_string( $json['code'] ?? null ) ? $json['code'] : 'not_found';
 
 			return match ( $code ) {
 				'paused'  => new self( self::PAUSED, 404, null, '', 0, $deprecation, $sunset, 'paused' ),

@@ -25,9 +25,24 @@ use Bristlecone\Zfolio\Feed\Validator;
 final class Sync {
 
 	/**
-	 * Pages fetched per run.
+	 * Most pages fetched per run.
 	 */
-	public const BATCH = 20;
+	public const BATCH = 200;
+
+	/**
+	 * Seconds of page fetching per run before the rest waits.
+	 */
+	public const BUDGET = 20;
+
+	/**
+	 * Seconds before an unfinished sync continues.
+	 */
+	public const CONTINUE_AFTER = 300;
+
+	/**
+	 * Tries per page and hash before the page waits for the next revision.
+	 */
+	public const ATTEMPTS = 3;
 
 	/**
 	 * Constructor.
@@ -88,7 +103,7 @@ final class Sync {
 
 		switch ( $response->outcome ) {
 			case Response::NOT_MODIFIED:
-				Connections::update_state( $id, $common + array( 'last_error' => '' ) + self::active_status( $state ) );
+				Connections::update_state( $id, $common + array( 'last_error' => '' ) + self::reactivate( $id, $state ) );
 				return array( 'ok' => true, 'message' => __( 'No changes since the last update.', 'bristlecone-zfolio' ) );
 
 			case Response::RATE_LIMITED:
@@ -142,43 +157,71 @@ final class Sync {
 		}
 
 		if ( Plan::is_stale( $manifest['revision'], (int) $state['revision'] ) ) {
-			Connections::update_state( $id, $common + array( 'last_error' => '' ) + self::active_status( $state ) );
+			Connections::update_state( $id, $common + array( 'last_error' => '' ) + self::reactivate( $id, $state ) );
 			return array( 'ok' => true, 'message' => __( 'No changes since the last update.', 'bristlecone-zfolio' ) );
 		}
 
-		$plan = Plan::make( $manifest['pages'], Store::hashes( $id ) );
+		$stored   = Store::manifest_rows( $id );
+		$plan     = Plan::make( $manifest['pages'], array_map( static fn ( array $row ): string => $row['hash'], $stored ) );
+		$failures = self::current_failures( (array) $state['failures'], $manifest['pages'] );
 
-		foreach ( $manifest['pages'] as $page ) {
-			Store::upsert_meta( $id, $page );
+		foreach ( $manifest['pages'] as $page_id => $page ) {
+			if ( Store::meta_changed( $page, $stored[ $page_id ] ?? null ) ) {
+				Store::upsert_meta( $id, $page );
+			}
 		}
 
-		$deleted = Store::delete_except( $id, array_keys( $manifest['pages'] ) );
+		$deleted = $plan->delete ? Store::delete_except( $id, array_keys( $manifest['pages'] ), array_keys( $stored ) ) : array();
+
+		// Pages that keep failing for this hash wait for the next revision, so
+		// the rest of the feed can settle; pages that failed before go last.
+		$given_up = array_values( array_filter( $plan->fetch, static fn ( string $page_id ): bool => ( $failures[ $page_id ]['count'] ?? 0 ) >= self::ATTEMPTS ) );
+		$queue    = array_values( array_diff( $plan->fetch, $given_up ) );
+		usort( $queue, static fn ( string $a, string $b ): int => ( $failures[ $a ]['count'] ?? 0 ) <=> ( $failures[ $b ]['count'] ?? 0 ) );
+
 		$fetched = array();
 		$failed  = 0;
+		$limited = false;
+		$started = microtime( true );
 
-		foreach ( array_slice( $plan->fetch, 0, self::BATCH ) as $page_id ) {
-			$page = $this->client->page( (string) $connection['address'], $page_id );
-
-			if ( Response::RATE_LIMITED === $page->outcome ) {
-				Connections::update_state( $id, array( 'retry_until' => $now + $page->retry_after ) );
-				++$failed;
+		foreach ( $queue as $page_id ) {
+			if ( count( $fetched ) + $failed >= self::BATCH || microtime( true ) - $started > self::BUDGET ) {
 				break;
 			}
 
-			$valid = Response::OK === $page->outcome ? Validator::page( (array) $page->data, $manifest['feedId'] ) : null;
+			$page = $this->client->page( (string) $connection['address'], $page_id );
 
-			if ( null === $valid || $valid['id'] !== $page_id ) {
-				++$failed;
-				continue;
+			if ( Response::RATE_LIMITED === $page->outcome ) {
+				Connections::update_state( $id, array( 'retry_until' => time() + $page->retry_after ) );
+				$limited = true;
+				break;
 			}
 
-			$valid['html'] = Sanitizer::clean( $valid['html'] );
-			Store::save_content( $id, $valid, min( (int) $manifest['allowlistVersion'], Sanitizer::ALLOWLIST_VERSION ) );
-			$fetched[] = $page_id;
+			if ( $this->store_page( $id, $page, $manifest, $page_id ) ) {
+				$fetched[] = $page_id;
+				unset( $failures[ $page_id ] );
+			} else {
+				++$failed;
+				$failures[ $page_id ] = array(
+					'hash'  => (string) $manifest['pages'][ $page_id ]['hash'],
+					'count' => ( $failures[ $page_id ]['count'] ?? 0 ) + 1,
+				);
+			}
 		}
 
-		$remaining = count( $plan->fetch ) - count( $fetched );
-		$complete  = 0 === $remaining;
+		$given_up  = array_values( array_filter( $plan->fetch, static fn ( string $page_id ): bool => ( $failures[ $page_id ]['count'] ?? 0 ) >= self::ATTEMPTS ) );
+		$remaining = count( $plan->fetch ) - count( $fetched ) - count( $given_up );
+		$complete  = $remaining <= 0;
+		$problem   = '';
+
+		if ( $given_up ) {
+			/* translators: %d: number of pages. */
+			$problem = sprintf( _n( '%d page could not be fetched', '%d pages could not be fetched', count( $given_up ), 'bristlecone-zfolio' ), count( $given_up ) );
+		} elseif ( $failed > 0 || $limited ) {
+			$problem = __( 'some pages could not be fetched yet', 'bristlecone-zfolio' );
+		}
+
+		$was_down = in_array( $state['status'], array( 'paused', 'revoked' ), true );
 
 		Connections::update_state(
 			$id,
@@ -191,17 +234,19 @@ final class Sync {
 				'etag'         => $complete ? $response->etag : '',
 				'folders'      => $manifest['folders'],
 				'pending'      => ! $complete,
+				'failures'     => $failures,
 				'last_changed' => ( $fetched || $deleted ) ? $now : (int) $state['last_changed'],
-				'last_error'   => $failed > 0 ? 'some pages could not be fetched' : '',
+				'last_error'   => $problem,
 			)
 		);
 
 		if ( $fetched || $deleted || 'active' !== $state['status'] ) {
-			Cache::purge_pages( $id, array_merge( $fetched, $deleted ), 'active' !== $state['status'] );
+			Cache::purge_pages( $id, array_merge( $fetched, $deleted ), $was_down || 'active' !== $state['status'] );
 		}
 
 		if ( ! $complete ) {
-			Cron::schedule( $id, $failed > 0 ? 300 : 30 );
+			// The contract allows one feed request every 5 minutes per connection.
+			Cron::schedule( $id, self::CONTINUE_AFTER );
 		} else {
 			/**
 			 * Fires when a connection's stored pages match its feed.
@@ -216,52 +261,182 @@ final class Sync {
 
 		if ( ! $complete ) {
 			/* translators: %d: pages still to fetch. */
-			$message .= ' ' . sprintf( __( '%d more will follow shortly.', 'bristlecone-zfolio' ), $remaining );
+			$message .= ' ' . sprintf( __( '%d more will follow in a few minutes.', 'bristlecone-zfolio' ), $remaining );
 		}
 
-		return array( 'ok' => true, 'message' => $message );
+		if ( $given_up ) {
+			/* translators: %d: number of pages. */
+			$message .= ' ' . sprintf( _n( '%d page could not be fetched and will be tried again when the feed next changes.', '%d pages could not be fetched and will be tried again when the feed next changes.', count( $given_up ), 'bristlecone-zfolio' ), count( $given_up ) );
+		} elseif ( $failed > 0 || $limited ) {
+			$message .= ' ' . __( 'Some pages could not be fetched this time and will be tried again.', 'bristlecone-zfolio' );
+		}
+
+		return array( 'ok' => '' === $problem, 'message' => $message );
 	}
 
 	/**
-	 * A 304 or 200 means the feed serves again.
+	 * Fetch one page again now (per-page Refresh), whatever its hash.
 	 *
+	 * @param string $id      Connection id.
+	 * @param string $page_id Page id.
+	 * @return array{ok:bool,message:string}
+	 */
+	public function refresh_page( string $id, string $page_id ): array {
+		$connection = Connections::get( $id );
+		$state      = Connections::state( $id );
+
+		if ( null === $connection || '' === $state['feed_id'] || null === Store::get( $id, $page_id ) ) {
+			return array( 'ok' => false, 'message' => __( 'That page isn’t stored yet. Choose Refresh Now first.', 'bristlecone-zfolio' ) );
+		}
+
+		if ( (int) $state['retry_until'] > time() || ! self::lock( $id ) ) {
+			return array( 'ok' => false, 'message' => __( 'An update is running or zFolio asked the site to wait. Try again in a minute.', 'bristlecone-zfolio' ) );
+		}
+
+		try {
+			$response = $this->client->page( (string) $connection['address'], $page_id );
+			$manifest = array(
+				'feedId'           => (string) $state['feed_id'],
+				'allowlistVersion' => Sanitizer::ALLOWLIST_VERSION,
+			);
+
+			if ( ! $this->store_page( $id, $response, $manifest, $page_id ) ) {
+				return array( 'ok' => false, 'message' => __( 'zFolio didn’t send that page. The site keeps showing what it has.', 'bristlecone-zfolio' ) );
+			}
+		} finally {
+			self::unlock( $id );
+		}
+
+		$failures = (array) Connections::state( $id )['failures'];
+
+		if ( isset( $failures[ $page_id ] ) ) {
+			unset( $failures[ $page_id ] );
+			Connections::update_state( $id, $failures ? array( 'failures' => $failures ) : array( 'failures' => array(), 'last_error' => '' ) );
+		}
+
+		Cache::purge_pages( $id, array( $page_id ) );
+
+		return array( 'ok' => true, 'message' => __( 'Page updated.', 'bristlecone-zfolio' ) );
+	}
+
+	/**
+	 * Validate, clean, and save one page response.
+	 *
+	 * @param string              $id       Connection id.
+	 * @param Response            $response Page response.
+	 * @param array<string,mixed> $manifest feedId and allowlistVersion.
+	 * @param string              $page_id  Page asked for.
+	 */
+	private function store_page( string $id, Response $response, array $manifest, string $page_id ): bool {
+		$valid = Response::OK === $response->outcome ? Validator::page( (array) $response->data, (string) $manifest['feedId'] ) : null;
+
+		if ( null === $valid || $valid['id'] !== $page_id ) {
+			return false;
+		}
+
+		$valid['html'] = Sanitizer::clean( $valid['html'] );
+
+		return Store::save_content( $id, $valid, min( (int) $manifest['allowlistVersion'], Sanitizer::ALLOWLIST_VERSION ) );
+	}
+
+	/**
+	 * Failure counts that still apply: same page, same hash.
+	 *
+	 * @param array<string,mixed>               $failures Stored failures.
+	 * @param array<string,array<string,mixed>> $pages    Manifest pages.
+	 * @return array<string,array{hash:string,count:int}>
+	 */
+	private static function current_failures( array $failures, array $pages ): array {
+		$out = array();
+
+		foreach ( $failures as $page_id => $failure ) {
+			if ( is_array( $failure ) && isset( $pages[ $page_id ] ) && ( $failure['hash'] ?? '' ) === $pages[ $page_id ]['hash'] ) {
+				$out[ (string) $page_id ] = array(
+					'hash'  => (string) $failure['hash'],
+					'count' => (int) ( $failure['count'] ?? 0 ),
+				);
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * State for a feed that serves again (304, or a stale 200): reactivate a
+	 * paused or revoked connection and purge what its takedown hid.
+	 *
+	 * @param string              $id    Connection id.
 	 * @param array<string,mixed> $state State.
 	 * @return array<string,string>
 	 */
-	private static function active_status( array $state ): array {
-		if ( in_array( $state['status'], array( 'paused', 'revoked' ), true ) ) {
-			return array( 'status' => 'active' );
+	private static function reactivate( string $id, array $state ): array {
+		if ( ! in_array( $state['status'], array( 'paused', 'revoked' ), true ) ) {
+			return array();
 		}
 
-		return array();
+		Cache::purge_connection( $id );
+
+		return array( 'status' => 'active' );
 	}
 
 	/**
-	 * Take the per-connection lock. Stale locks expire after five minutes.
+	 * Lock tokens this request holds, by connection.
+	 *
+	 * @var array<string,string>
+	 */
+	private static array $tokens = array();
+
+	/**
+	 * Take the per-connection lock. A lock older than five minutes is stale
+	 * and may be taken over, but only by one process: the takeover replaces
+	 * the value it read, and fails if someone else got there first.
 	 *
 	 * @param string $id Connection id.
 	 */
 	private static function lock( string $id ): bool {
-		$name = 'bristlecone_zfolio_lock_' . $id;
+		global $wpdb;
 
-		if ( add_option( $name, time(), '', false ) ) {
+		$name  = 'bristlecone_zfolio_lock_' . $id;
+		$token = time() . ':' . wp_generate_password( 16, false, false );
+
+		if ( add_option( $name, $token, '', false ) ) {
+			self::$tokens[ $id ] = $token;
 			return true;
 		}
 
-		if ( (int) get_option( $name ) < time() - 300 ) {
-			update_option( $name, time(), false );
-			return true;
+		$current = (string) $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", $name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+
+		if ( (int) strtok( $current, ':' ) >= time() - 300 ) {
+			return false;
 		}
 
-		return false;
+		$taken = $wpdb->update( $wpdb->options, array( 'option_value' => $token ), array( 'option_name' => $name, 'option_value' => $current ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		wp_cache_delete( $name, 'options' );
+
+		if ( 1 !== $taken ) {
+			return false;
+		}
+
+		self::$tokens[ $id ] = $token;
+
+		return true;
 	}
 
 	/**
-	 * Release the lock.
+	 * Release the lock, only if this process still holds it.
 	 *
 	 * @param string $id Connection id.
 	 */
 	private static function unlock( string $id ): void {
-		delete_option( 'bristlecone_zfolio_lock_' . $id );
+		global $wpdb;
+
+		if ( ! isset( self::$tokens[ $id ] ) ) {
+			return;
+		}
+
+		$name = 'bristlecone_zfolio_lock_' . $id;
+		$wpdb->delete( $wpdb->options, array( 'option_name' => $name, 'option_value' => self::$tokens[ $id ] ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		wp_cache_delete( $name, 'options' );
+		unset( self::$tokens[ $id ] );
 	}
 }

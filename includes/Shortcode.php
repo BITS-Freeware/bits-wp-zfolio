@@ -14,6 +14,9 @@ namespace Bristlecone\Zfolio;
  */
 final class Shortcode {
 
+	// The tag is the product's name, [zfolio], on purpose: it is what site
+	// owners type. Everything stored or hooked uses the bristlecone_zfolio prefix.
+
 	public const TAG = 'zfolio';
 
 	/**

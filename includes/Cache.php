@@ -29,13 +29,13 @@ final class Cache {
 			return;
 		}
 
-		$posts = array();
+		$posts = Refs::posts_for_pages( $connection_id, $page_ids );
 
-		foreach ( $page_ids as $page_id ) {
-			$posts = array_merge( $posts, Refs::posts_for( $connection_id, $page_id ) );
+		if ( $page_ids && Refs::needs_full_purge( $connection_id, $posts ) ) {
+			self::purge_site();
 		}
 
-		self::purge_posts( array_values( array_unique( $posts ) ) );
+		self::purge_posts( $posts );
 	}
 
 	/**
@@ -44,7 +44,42 @@ final class Cache {
 	 * @param string $connection_id Connection id.
 	 */
 	public static function purge_connection( string $connection_id ): void {
-		self::purge_posts( Refs::posts_for_connection( $connection_id ) );
+		$posts = Refs::posts_for_connection( $connection_id );
+
+		if ( Refs::needs_full_purge( $connection_id, $posts ) ) {
+			self::purge_site();
+		}
+
+		self::purge_posts( $posts );
+	}
+
+	/**
+	 * Purge whole page caches, for content that has no URL of its own (a
+	 * widget, a synced pattern, a template part).
+	 */
+	public static function purge_site(): void {
+		if ( function_exists( 'rocket_clean_domain' ) ) {
+			rocket_clean_domain();
+		}
+
+		if ( function_exists( 'w3tc_flush_all' ) ) {
+			w3tc_flush_all();
+		}
+
+		if ( function_exists( 'wp_cache_clear_cache' ) ) {
+			wp_cache_clear_cache();
+		}
+
+		if ( function_exists( 'sg_cachepress_purge_cache' ) ) {
+			sg_cachepress_purge_cache();
+		}
+
+		do_action( 'litespeed_purge_all' );
+
+		/**
+		 * Fires after the plugin asked page caches to clear everything.
+		 */
+		do_action( 'bristlecone_zfolio_purged_site' );
 	}
 
 	/**

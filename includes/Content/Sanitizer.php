@@ -27,6 +27,24 @@ final class Sanitizer {
 	public const ALLOWLIST_VERSION = 1;
 
 	/**
+	 * Version of this sanitizer's own rules. Stored with each page; a row
+	 * cleaned by an older generation is cleaned again when it is shown.
+	 */
+	public const GENERATION = 2;
+
+	/**
+	 * MathML elements: only their own presentation attributes, never the
+	 * HTML global ones.
+	 */
+	private const MATHML = array( 'math', 'annotation', 'semantics', 'menclose', 'mfrac', 'mi', 'mn', 'mo', 'mover', 'mpadded', 'mphantom', 'mroot', 'mrow', 'ms', 'mspace', 'msqrt', 'mstyle', 'msub', 'msubsup', 'msup', 'mtable', 'mtd', 'mtext', 'mtr', 'munder', 'munderover' );
+
+	/**
+	 * URL attributes that must be absolute https (resources the visitor's
+	 * browser loads by itself).
+	 */
+	private const HTTPS_ONLY = array( 'src', 'longdesc', 'cite' );
+
+	/**
 	 * Parsed allowlist.
 	 *
 	 * @var array<string,mixed>|null
@@ -97,7 +115,8 @@ final class Sanitizer {
 		$out    = array();
 
 		foreach ( (array) ( $list['elements'] ?? array() ) as $element => $attributes ) {
-			$out[ strtolower( (string) $element ) ] = array_fill_keys( array_map( 'strtolower', array_keys( (array) $attributes ) ), true ) + $global;
+			$element         = strtolower( (string) $element );
+			$out[ $element ] = array_fill_keys( array_map( 'strtolower', array_keys( (array) $attributes ) ), true ) + ( in_array( $element, self::MATHML, true ) ? array() : $global );
 		}
 
 		return $out;
@@ -128,24 +147,33 @@ final class Sanitizer {
 	private static function enforce_rules( string $html, array $list ): string {
 		$elements = (array) ( $list['elements'] ?? array() );
 		$global   = (array) ( $list['globalAttributes'] ?? array() );
-		$required = (array) ( $list['required'] ?? array() );
-		$tags     = new WP_HTML_Tag_Processor( $html );
+		$required  = (array) ( $list['required'] ?? array() );
+		$protocols = (array) ( $list['protocols'] ?? array() );
+		$tags      = new WP_HTML_Tag_Processor( $html );
 
 		while ( $tags->next_tag() ) {
 			if ( $tags->is_tag_closer() ) {
 				continue;
 			}
 
-			$tag   = strtolower( (string) $tags->get_tag() );
-			$rules = (array) ( $elements[ $tag ] ?? array() );
-			$names = $tags->get_attribute_names_with_prefix( '' ) ?? array();
+			$tag     = strtolower( (string) $tags->get_tag() );
+			$rules   = (array) ( $elements[ $tag ] ?? array() );
+			$names   = $tags->get_attribute_names_with_prefix( '' ) ?? array();
+			$globals = in_array( $tag, self::MATHML, true ) ? array() : $global;
 
 			foreach ( $names as $name ) {
-				$rule  = $rules[ $name ] ?? $global[ $name ] ?? false;
+				$rule  = $rules[ $name ] ?? $globals[ $name ] ?? false;
 				$value = $tags->get_attribute( $name );
 
 				if ( false === $rule ) {
 					$tags->remove_attribute( $name );
+					continue;
+				}
+
+				if ( isset( $protocols[ $name ] ) ) {
+					if ( ! is_string( $value ) || ! self::url_allowed( $name, $value, (array) $protocols[ $name ] ) ) {
+						$tags->remove_attribute( $name );
+					}
 					continue;
 				}
 
@@ -214,6 +242,45 @@ final class Sanitizer {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Whether a URL attribute value keeps to its own protocols.
+	 *
+	 * Resource URLs (src, cite, longdesc) must be absolute https. Links may
+	 * use any of the attribute's protocols, or point at a fragment on the same
+	 * page; protocol-relative and site-relative URLs are refused for both.
+	 *
+	 * @param string       $name      Attribute.
+	 * @param string       $value     Value.
+	 * @param list<string> $protocols Protocols the allowlist names for it.
+	 */
+	public static function url_allowed( string $name, string $value, array $protocols ): bool {
+		$value = trim( $value );
+
+		if ( '' === $value || 1 === preg_match( '/[\x00-\x20"\'<>\\\\]/', $value ) ) {
+			return false;
+		}
+
+		if ( in_array( $name, self::HTTPS_ONLY, true ) ) {
+			return 1 === preg_match( '#^https://[^/?\#]+#i', $value );
+		}
+
+		if ( str_starts_with( $value, '#' ) ) {
+			return true;
+		}
+
+		if ( ! preg_match( '/^([a-z][a-z0-9+.-]*):/i', $value, $match ) ) {
+			return false;
+		}
+
+		$scheme = strtolower( $match[1] );
+
+		if ( ! in_array( $scheme, array_map( 'strtolower', $protocols ), true ) ) {
+			return false;
+		}
+
+		return ! in_array( $scheme, array( 'http', 'https' ), true ) || 1 === preg_match( '#^https?://[^/?\#]+#i', $value );
 	}
 
 	/**

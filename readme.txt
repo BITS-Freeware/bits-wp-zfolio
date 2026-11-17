@@ -34,7 +34,7 @@ Use the **zFolio Page** block, or the shortcode shown next to each page in Brist
 
 This plugin connects to zFolio, a writing service run by Bristlecone IT Services, to read the documents and folders you choose to publish to your site.
 
-* **What is sent and when:** when you add a connection, choose Test Connection or Refresh Now, and on each scheduled check (every 15 minutes by default), your site requests the feed and any changed pages from the feed host, `zfolio.zuuid.cc`. Each request carries the feed address you pasted and a User-Agent naming the plugin and WordPress versions. Nothing about your site’s visitors is sent.
+* **What is sent and when:** when you add a connection, choose Test Connection or Refresh Now, and on each scheduled check (every 15 minutes by default), your site requests the feed and any changed pages from the feed host, `zfolio.zuuid.cc`. The plugin accepts feed addresses on that host only. Each request carries the feed address you pasted and a User-Agent naming the plugin and WordPress versions. Nothing about your site’s visitors is sent.
 * **Webhooks (only if you set them up):** zFolio sends your site a short signed notice when the feed changes, to the webhook address shown in Bristlecone → zFolio. The notice names the feed and the pages that changed, never their content. Your site answers with a status code and nothing else.
 * **Images:** pages show their images from zFolio’s image host, `zfolio-images.zuuid.cc`. Each visitor’s browser loads those images from that host, which receives the visitor’s IP address and browser details, as any web host does.
 * zFolio [Terms of Use](https://bristleconeit.com/policies/terms/zsuite/zfolio/) and [Privacy Policy](https://bristleconeit.com/policies/privacy/zsuite/zfolio/).
@@ -64,6 +64,10 @@ Yes. Anyone with the address can read the feed, so the plugin hides it once save
 
 No. zFolio is the source, so mirrored pages are read-only and change only when you choose Update in zFolio. You can add them to menus like any page.
 
+= Who can pick and preview zFolio pages in the editor? =
+
+Anyone who can edit posts, by default. To narrow it, for a feed not every author should read, filter `bristlecone_zfolio_editor_capability`, for example to `publish_posts`.
+
 = Does WordPress see my Markdown? =
 
 No. zFolio sends finished HTML, and the plugin cleans it again with a fixed list of allowed elements before storing it.
@@ -74,6 +78,7 @@ No. zFolio sends finished HTML, and the plugin cleans it again with a fixed list
 * First development version: connections, scheduled checks, stored pages, the zFolio Page block and the shortcode.
 * Webhooks: signed instant updates, with pause, turn-off, page removal, and address and secret rotation handled.
 * Mirror mode: a feed's folders and pages as read-only WordPress pages, with redirects when a page moves.
+* Review fixes: a page that keeps failing no longer stops a sync from finishing; feed addresses must be on zFolio's host; image and link URLs keep to the feed contract; stored pages are cleaned again after a sanitizer update; caches are purged for paused feeds wherever their pages appear; a new feed address is checked before it replaces the old one.
 
 == Upgrade Notice ==
 

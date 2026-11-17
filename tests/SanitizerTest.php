@@ -84,4 +84,36 @@ final class SanitizerTest extends TestCase {
 		$this->assertStringNotContainsString( '<math', $out );
 		$this->assertStringContainsString( '<code class="zfolio-tex">E = mc^2</code>', $out );
 	}
+
+	public function test_resource_urls_must_be_absolute_https(): void {
+		foreach ( array( '//evil.example/t.png', '/wp-admin/admin-ajax.php?action=x', 'mailto:a@b.c', 'http://example.com/a.png', 'xmpp:a@b.c', 'data:image/png;base64,AAAA' ) as $src ) {
+			$this->assertStringNotContainsString( 'src=', Sanitizer::clean( '<img src="' . $src . '" alt="a">' ), $src );
+		}
+
+		$this->assertStringContainsString( 'src="https://zfolio-images.zuuid.cc/a.png"', Sanitizer::clean( '<img src="https://zfolio-images.zuuid.cc/a.png" alt="a">' ) );
+	}
+
+	public function test_links_keep_their_own_protocols(): void {
+		$kept    = array( 'https://example.com/a', 'http://example.com/b', 'mailto:someone@example.com', '#user-content-x', 'xmpp:room@example.com' );
+		$dropped = array( '//evil.example/x', '/wp-login.php', 'relative/path', 'javascript:alert(1)', 'https:/missing-host', 'ftp://example.com/x' );
+
+		foreach ( $kept as $href ) {
+			$this->assertStringContainsString( 'href="' . $href . '"', Sanitizer::clean( '<a href="' . $href . '">x</a>' ), $href );
+		}
+
+		foreach ( $dropped as $href ) {
+			$this->assertStringNotContainsString( 'href=', Sanitizer::clean( '<a href="' . $href . '">x</a>' ), $href );
+		}
+	}
+
+	public function test_mathml_gets_no_html_global_attributes(): void {
+		$html = Sanitizer::clean( '<math display="block" tabindex="1" title="t" action="x"><mi mathvariant="bold" value="v">x</mi></math>' );
+
+		$this->assertStringContainsString( 'display="block"', $html );
+		$this->assertStringContainsString( 'mathvariant="bold"', $html );
+		$this->assertStringNotContainsString( 'tabindex', $html );
+		$this->assertStringNotContainsString( 'title=', $html );
+		$this->assertStringNotContainsString( 'action', $html );
+		$this->assertStringNotContainsString( 'value', $html );
+	}
 }

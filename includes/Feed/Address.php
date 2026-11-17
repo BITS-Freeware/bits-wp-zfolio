@@ -21,10 +21,32 @@ final class Address {
 	private const PATH_PATTERN = '#^/feed/v1/([A-Za-z0-9_-]{16,128})/?$#';
 
 	/**
+	 * zFolio's feed host.
+	 */
+	public const HOST = 'zfolio.zuuid.cc';
+
+	/**
+	 * Hosts a feed address may use: zFolio's, unless a site deliberately
+	 * allows another (a test server, say) with the filter.
+	 *
+	 * @return list<string>
+	 */
+	public static function hosts(): array {
+		/**
+		 * Filters the hosts a feed address may point at.
+		 *
+		 * @param list<string> $hosts Lowercase host names.
+		 */
+		$hosts = apply_filters( 'bristlecone_zfolio_feed_hosts', array( self::HOST ) );
+
+		return array_values( array_filter( array_map( 'strtolower', array_map( 'strval', (array) $hosts ) ) ) );
+	}
+
+	/**
 	 * Normalize a pasted feed address, or return null when it is not one.
 	 *
-	 * Accepts any HTTPS host so no host is hard-coded; the request itself goes
-	 * through wp_safe_remote_get(), which refuses local and private addresses.
+	 * Only zFolio's host is accepted (see hosts()), and the request still goes
+	 * through wp_safe_remote_get() with redirects off.
 	 *
 	 * @param string $raw Pasted address.
 	 */
@@ -54,6 +76,10 @@ final class Address {
 		}
 
 		if ( ! preg_match( '/^[a-z0-9.-]+$/', $host ) || ! str_contains( $host, '.' ) || filter_var( $host, FILTER_VALIDATE_IP ) ) {
+			return null;
+		}
+
+		if ( ! in_array( $host, self::hosts(), true ) ) {
 			return null;
 		}
 
