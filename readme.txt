@@ -18,6 +18,7 @@ zFolio for WordPress is the official zFolio plugin for WordPress. Write document
 * **Only published content.** Pages change on your site only when you choose Update in zFolio, so drafts never appear.
 * **Cached in WordPress.** Pages are stored in your site’s database, so visitors never wait on zFolio and an outage never empties your site.
 * **Stays current.** The plugin checks each feed for changes every 15 minutes by default (5 to 60 minutes is available), fetches only the pages that changed, removes pages you removed, and clears page caches for the posts that show them.
+* **Instant updates with webhooks (optional).** Add the connection’s webhook address in zFolio, paste the secret, and your site updates the moment you choose Update. Every webhook is signed and checked.
 * **Refresh by hand.** Refresh a whole connection or a single page, or clear stored content and fetch it again.
 * **Links between pages work.** Links from one zFolio page to another point at the post that shows it on your site.
 * **Math.** Formulas show as MathML, or as their TeX source if you prefer.
@@ -27,13 +28,14 @@ Use the **zFolio Page** block, or the shortcode shown next to each page in Brist
 
 `[zfolio connection="c1a2b3c4d5" page="pg_…"]`
 
-Webhooks for instant updates and a mirror mode that keeps a whole folder as WordPress pages are coming in later versions.
+A mirror mode that keeps a whole folder as WordPress pages is coming in a later version.
 
 = External Services =
 
 This plugin connects to zFolio, a writing service run by Bristlecone IT Services, to read the documents and folders you choose to publish to your site.
 
 * **What is sent and when:** when you add a connection, choose Test Connection or Refresh Now, and on each scheduled check (every 15 minutes by default), your site requests the feed and any changed pages from the feed host, `zfolio.zuuid.cc`. Each request carries the feed address you pasted and a User-Agent naming the plugin and WordPress versions. Nothing about your site’s visitors is sent.
+* **Webhooks (only if you set them up):** zFolio sends your site a short signed notice when the feed changes, to the webhook address shown in Bristlecone → zFolio. The notice names the feed and the pages that changed, never their content. Your site answers with a status code and nothing else.
 * **Images:** pages show their images from zFolio’s image host, `zfolio-images.zuuid.cc`. Each visitor’s browser loads those images from that host, which receives the visitor’s IP address and browser details, as any web host does.
 * zFolio [Terms of Use](https://bristleconeit.com/policies/terms/zsuite/zfolio/) and [Privacy Policy](https://bristleconeit.com/policies/privacy/zsuite/zfolio/).
 
@@ -48,7 +50,11 @@ This plugin connects to zFolio, a writing service run by Bristlecone IT Services
 
 = Does my site need to be public? =
 
-No. The plugin checks for changes on a schedule, so it works on any site that can reach zFolio. A low-traffic site may check a little later than scheduled, because WordPress runs scheduled tasks when someone visits.
+No. The plugin checks for changes on a schedule, so it works on any site that can reach zFolio. A low-traffic site may check a little later than scheduled, because WordPress runs scheduled tasks when someone visits. Webhooks are the exception: zFolio must reach your site over HTTPS to send them.
+
+= What if a webhook is missed? =
+
+Nothing breaks. Scheduled checks keep running with webhooks on, so a late or lost webhook only means the change shows up on the next check.
 
 = Is the feed address secret? =
 
@@ -62,6 +68,7 @@ No. zFolio sends finished HTML, and the plugin cleans it again with a fixed list
 
 = 0.1.0 =
 * First development version: connections, scheduled checks, stored pages, the zFolio Page block and the shortcode.
+* Webhooks: signed instant updates, with pause, turn-off, page removal, and address and secret rotation handled.
 
 == Upgrade Notice ==
 

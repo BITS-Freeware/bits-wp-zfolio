@@ -42,6 +42,7 @@ final class Plugin {
 		Shortcode::register();
 		Block::register();
 		Rest::register();
+		Webhook\Receiver::register();
 
 		if ( is_admin() ) {
 			SettingsPage::register();

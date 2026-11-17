@@ -81,6 +81,32 @@ final class Cron {
 	}
 
 	/**
+	 * Run a connection's sync as soon as possible: schedule it for now and
+	 * nudge WordPress cron, unless zFolio asked the site to wait.
+	 *
+	 * @param string $id Connection id.
+	 */
+	public static function now( string $id ): void {
+		if ( null === Connections::get( $id ) ) {
+			return;
+		}
+
+		$state = Connections::state( $id );
+
+		if ( (int) $state['retry_until'] > time() ) {
+			self::schedule( $id, 0 );
+			return;
+		}
+
+		wp_clear_scheduled_hook( self::HOOK, array( $id ) );
+		wp_schedule_single_event( time(), self::HOOK, array( $id ) );
+
+		if ( function_exists( 'spawn_cron' ) && ! wp_doing_cron() ) {
+			spawn_cron();
+		}
+	}
+
+	/**
 	 * Remove a connection's events.
 	 *
 	 * @param string $id Connection id.
