@@ -28,7 +28,7 @@ Use the **zFolio Page** block, or the shortcode shown next to each page in Brist
 
 `[zfolio connection="c1a2b3c4d5" page="pg_…"]`
 
-A mirror mode that keeps a whole folder as WordPress pages is coming in a later version.
+**Mirror mode** publishes a whole feed as read-only WordPress pages in the same folders, such as `/docs/product-guide/setup/install/`. Pages appear, change, and disappear with the feed, folders list their pages, links between pages point at the mirrored pages, and a page that moves in zFolio redirects from its old address. Turn it on per connection.
 
 = External Services =
 
@@ -60,6 +60,10 @@ Nothing breaks. Scheduled checks keep running with webhooks on, so a late or los
 
 Yes. Anyone with the address can read the feed, so the plugin hides it once saved. If it leaks, rotate it in zFolio and paste the new one.
 
+= Can I edit mirrored pages in WordPress? =
+
+No. zFolio is the source, so mirrored pages are read-only and change only when you choose Update in zFolio. You can add them to menus like any page.
+
 = Does WordPress see my Markdown? =
 
 No. zFolio sends finished HTML, and the plugin cleans it again with a fixed list of allowed elements before storing it.
@@ -69,6 +73,7 @@ No. zFolio sends finished HTML, and the plugin cleans it again with a fixed list
 = 0.1.0 =
 * First development version: connections, scheduled checks, stored pages, the zFolio Page block and the shortcode.
 * Webhooks: signed instant updates, with pause, turn-off, page removal, and address and secret rotation handled.
+* Mirror mode: a feed's folders and pages as read-only WordPress pages, with redirects when a page moves.
 
 == Upgrade Notice ==
 

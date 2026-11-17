@@ -66,6 +66,9 @@ final class Render {
 			static fn ( string $slug ): ?string => self::url_for( $connection_id, $slug )
 		);
 
+		// Feed text is never shortcode syntax: `the_content` runs shortcodes after blocks.
+		$html = str_replace( array( '[', ']' ), array( '&#91;', '&#93;' ), $html );
+
 		$classes = trim( 'zfolio-page ' . $class );
 		$lang    = (string) $row['lang'];
 

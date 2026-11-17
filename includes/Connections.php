@@ -142,9 +142,20 @@ final class Connections {
 	 */
 	public static function update_state( string $id, array $values ): void {
 		$state        = self::all_state();
-		$state[ $id ] = array_merge( self::state( $id ), $values );
+		$before       = self::state( $id );
+		$state[ $id ] = array_merge( $before, $values );
 
 		update_option( self::STATE_OPTION, $state, false );
+
+		if ( isset( $values['status'] ) && $values['status'] !== $before['status'] ) {
+			/**
+			 * Fires when a connection's status changes (active, paused, revoked).
+			 *
+			 * @param string $id     Connection id.
+			 * @param string $status New status.
+			 */
+			do_action( 'bristlecone_zfolio_status_changed', $id, (string) $values['status'] );
+		}
 	}
 
 	/**
@@ -172,6 +183,8 @@ final class Connections {
 			'takedown'       => 'hide',
 			'math'           => 'mathml',
 			'webhook_secret' => '',
+			'mirror'         => false,
+			'mirror_slug'    => '',
 		);
 
 		if ( ! in_array( (int) $connection['interval'], self::INTERVALS, true ) ) {
@@ -181,6 +194,9 @@ final class Connections {
 		$connection['interval'] = (int) $connection['interval'];
 		$connection['takedown'] = 'keep' === $connection['takedown'] ? 'keep' : 'hide';
 		$connection['math']     = 'tex' === $connection['math'] ? 'tex' : 'mathml';
+
+		$connection['mirror']      = ! empty( $connection['mirror'] );
+		$connection['mirror_slug'] = sanitize_title( (string) $connection['mirror_slug'] );
 
 		if ( ! Webhook\Signature::valid_secret( (string) $connection['webhook_secret'] ) ) {
 			$connection['webhook_secret'] = '';

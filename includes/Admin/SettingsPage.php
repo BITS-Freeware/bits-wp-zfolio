@@ -18,6 +18,7 @@ use Bristlecone\Zfolio\Feed\Response;
 use Bristlecone\Zfolio\Feed\Validator;
 use Bristlecone\Zfolio\Store;
 use Bristlecone\Zfolio\Sync;
+use Bristlecone\Zfolio\Mirror\Mirror;
 use Bristlecone\Zfolio\Webhook\Receiver;
 use Bristlecone\Zfolio\Webhook\Signature;
 
@@ -182,6 +183,15 @@ final class SettingsPage {
 
 		echo '</tbody></table>';
 
+		echo '<h2>' . esc_html__( 'Mirror Address', 'bristlecone-zfolio' ) . '</h2>';
+		echo '<p>' . esc_html__( 'Mirrored pages live under this address on your site. Changing it moves every mirrored page.', 'bristlecone-zfolio' ) . '</p>';
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+		echo '<input type="hidden" name="action" value="' . esc_attr( self::ACTION ) . '"><input type="hidden" name="do" value="mirror_base"><input type="hidden" name="connection" value="">';
+		wp_nonce_field( self::ACTION . '_mirror_base_' );
+		echo '<code>' . esc_html( home_url( '/' ) ) . '</code><input type="text" class="regular-text code" name="mirror_base" value="' . esc_attr( Mirror::base() ) . '"> ';
+		submit_button( __( 'Save Address', 'bristlecone-zfolio' ), 'secondary', 'submit', false );
+		echo '</form>';
+
 		echo '<h2>' . esc_html__( 'Clear All Content', 'bristlecone-zfolio' ) . '</h2>';
 		echo '<p>' . esc_html__( 'Deletes every stored page and fetches each feed again on its next update. Connections stay.', 'bristlecone-zfolio' ) . '</p>';
 		self::action_button( 'clear_all', '', __( 'Clear All', 'bristlecone-zfolio' ), '', __( 'Delete all stored zFolio content and fetch it again?', 'bristlecone-zfolio' ) );
@@ -212,7 +222,10 @@ final class SettingsPage {
 		foreach ( $rows as $row ) {
 			$fetched = '0000-00-00 00:00:00' === $row['fetched_at'] ? 0 : (int) strtotime( $row['fetched_at'] . ' UTC' );
 
-			echo '<tr><td>' . esc_html( str_repeat( '— ', count( $row['parents'] ) ) . $row['title'] ) . '<br><code>' . esc_html( $row['slug'] ) . '</code></td>';
+			$mirror_post = ! empty( $connection['mirror'] ) ? Mirror::find( $id, (string) $row['page_id'] ) : null;
+			$view        = null !== $mirror_post && 'publish' === $mirror_post->post_status ? ' <a href="' . esc_url( (string) get_permalink( $mirror_post ) ) . '">' . esc_html__( 'View', 'bristlecone-zfolio' ) . '</a>' : '';
+
+			echo '<tr><td>' . esc_html( str_repeat( '— ', count( $row['parents'] ) ) . $row['title'] ) . $view . '<br><code>' . esc_html( $row['slug'] ) . '</code></td>';
 			echo '<td><code>[zfolio connection="' . esc_html( $id ) . '" page="' . esc_html( $row['page_id'] ) . '"]</code></td>';
 			echo '<td>' . esc_html( self::when( $fetched ) ) . '</td><td>';
 			self::action_button( 'refresh_page', $id, __( 'Refresh', 'bristlecone-zfolio' ), '', '', array( 'page_id' => (string) $row['page_id'] ) );
@@ -237,6 +250,8 @@ final class SettingsPage {
 			'takedown'       => 'hide',
 			'math'           => 'mathml',
 			'webhook_secret' => '',
+			'mirror'         => false,
+			'mirror_slug'    => '',
 		);
 
 		echo '<p><a href="' . esc_url( self::url() ) . '">&larr; ' . esc_html__( 'All connections', 'bristlecone-zfolio' ) . '</a></p>';
@@ -276,6 +291,17 @@ final class SettingsPage {
 		echo '<label><input type="radio" name="math" value="mathml"' . checked( $connection['math'], 'mathml', false ) . '> ' . esc_html__( 'Show formulas (MathML)', 'bristlecone-zfolio' ) . '</label><br>';
 		echo '<label><input type="radio" name="math" value="tex"' . checked( $connection['math'], 'tex', false ) . '> ' . esc_html__( 'Show the TeX source instead', 'bristlecone-zfolio' ) . '</label>';
 		echo '</fieldset></td></tr>';
+
+		$root = $is_new ? '' : Mirror::root_url( (string) $connection['id'] );
+		echo '<tr><th scope="row">' . esc_html__( 'Mirror Mode', 'bristlecone-zfolio' ) . '</th><td>';
+		echo '<label><input type="checkbox" name="mirror" value="1"' . checked( ! empty( $connection['mirror'] ), true, false ) . '> ' . esc_html__( 'Publish every page of this feed as a WordPress page, in the same folders', 'bristlecone-zfolio' ) . '</label>';
+		echo '<p class="description">' . esc_html__( 'Pages appear, change, and disappear with the feed, and keep working links when a page moves. They are read-only in WordPress; edit them in zFolio. Turning this off deletes the mirrored pages.', 'bristlecone-zfolio' ) . '</p>';
+		echo '<p><label for="zfolio-mirror-slug">' . esc_html__( 'Address', 'bristlecone-zfolio' ) . '</label> <code>' . esc_html( home_url( '/' . Mirror::base() . '/' ) ) . '</code><input type="text" class="regular-text code" id="zfolio-mirror-slug" name="mirror_slug" value="' . esc_attr( (string) $connection['mirror_slug'] ) . '" placeholder="' . esc_attr__( 'from the feed title', 'bristlecone-zfolio' ) . '"></p>';
+		if ( '' !== $root ) {
+			/* translators: %s: URL. */
+			echo '<p>' . wp_kses( sprintf( __( 'Mirrored at %s', 'bristlecone-zfolio' ), '<a href="' . esc_url( $root ) . '">' . esc_html( $root ) . '</a>' ), array( 'a' => array( 'href' => true ) ) ) . '</p>';
+		}
+		echo '</td></tr>';
 
 		echo '</tbody></table>';
 
@@ -417,7 +443,7 @@ final class SettingsPage {
 
 			case 'clear':
 				Store::clear( $id );
-				Connections::update_state( $id, array( 'etag' => '', 'revision' => -1, 'feed_id' => '' ) );
+				Connections::update_state( $id, array( 'etag' => '', 'revision' => -1, 'feed_id' => '', 'pending' => true ) );
 				Cache::purge_connection( $id );
 				Cron::schedule( $id, 5 );
 				self::redirect( __( 'Content cleared. It will be fetched again in a moment.', 'bristlecone-zfolio' ), true );
@@ -426,15 +452,23 @@ final class SettingsPage {
 			case 'clear_all':
 				foreach ( array_keys( Connections::all() ) as $each ) {
 					Store::clear( $each );
-					Connections::update_state( $each, array( 'etag' => '', 'revision' => -1, 'feed_id' => '' ) );
+					Connections::update_state( $each, array( 'etag' => '', 'revision' => -1, 'feed_id' => '', 'pending' => true ) );
 					Cache::purge_connection( $each );
 					Cron::schedule( $each, 5 );
 				}
 				self::redirect( __( 'All content cleared. It will be fetched again in a moment.', 'bristlecone-zfolio' ), true );
 				break;
 
+			case 'mirror_base':
+				$base = isset( $_POST['mirror_base'] ) ? sanitize_title( wp_unslash( $_POST['mirror_base'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- checked above.
+				update_option( Mirror::BASE_OPTION, '' !== $base ? $base : 'docs', true );
+				Mirror::request_flush();
+				self::redirect( __( 'Mirror address saved.', 'bristlecone-zfolio' ), true );
+				break;
+
 			case 'delete':
 				Cache::purge_connection( $id );
+				Mirror::remove( $id );
 				Store::clear( $id );
 				Cron::unschedule( $id );
 				Connections::delete( $id );
@@ -471,6 +505,8 @@ final class SettingsPage {
 		$math        = isset( $_POST['math'] ) ? sanitize_key( wp_unslash( $_POST['math'] ) ) : 'mathml';
 		$raw_secret  = isset( $_POST['webhook_secret'] ) ? trim( (string) wp_unslash( $_POST['webhook_secret'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- validated by Signature::valid_secret().
 		$remove_hook = ! empty( $_POST['webhook_remove'] );
+		$mirror      = ! empty( $_POST['mirror'] );
+		$mirror_slug = isset( $_POST['mirror_slug'] ) ? sanitize_title( wp_unslash( $_POST['mirror_slug'] ) ) : '';
 		// phpcs:enable
 
 		$existing = '' !== $id ? Connections::get( $id ) : null;
@@ -518,8 +554,15 @@ final class SettingsPage {
 				'takedown'       => $takedown,
 				'math'           => $math,
 				'webhook_secret' => $secret,
+				'mirror'         => $mirror,
+				'mirror_slug'    => $mirror_slug,
 			)
 		);
+
+		if ( $mirror !== ! empty( $existing['mirror'] ) || $mirror_slug !== (string) ( $existing['mirror_slug'] ?? '' ) ) {
+			Mirror::request_flush();
+			wp_schedule_single_event( time(), Mirror::HOOK, array( $id ) );
+		}
 
 		if ( $changed ) {
 			// A rotated address serves the same feed; keep content, recheck at once.
