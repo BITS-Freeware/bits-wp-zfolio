@@ -36,3 +36,6 @@ vendor
 README.md
 composer.json
 composer.lock
+
+# WordPress.org listing assets (uploaded to SVN /assets)
+.wordpress-org
