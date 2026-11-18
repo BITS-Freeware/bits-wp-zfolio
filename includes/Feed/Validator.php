@@ -51,7 +51,7 @@ final class Validator {
 			return null;
 		}
 
-		if ( ! is_array( $data['pages'] ?? null ) || ! array_is_list( $data['pages'] ) || count( $data['pages'] ) > self::MAX_PAGES ) {
+		if ( ! is_array( $data['pages'] ?? null ) || array_values( $data['pages'] ) !== $data['pages'] || count( $data['pages'] ) > self::MAX_PAGES ) {
 			return null;
 		}
 

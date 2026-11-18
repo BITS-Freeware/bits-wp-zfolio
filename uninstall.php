@@ -19,7 +19,7 @@ function bristlecone_zfolio_uninstall_site(): void {
 	global $wpdb;
 
 	$table = $wpdb->prefix . 'bristlecone_zfolio_pages';
-	$wpdb->query( "DROP TABLE IF EXISTS {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- our own table.
+	$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $table ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- our own table.
 
 	delete_option( 'bristlecone_zfolio_connections' );
 	delete_option( 'bristlecone_zfolio_state' );

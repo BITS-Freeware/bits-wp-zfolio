@@ -453,7 +453,6 @@ final class Mirror {
 				'post_status'      => 'any',
 				'posts_per_page'   => -1,
 				'no_found_rows'    => true,
-				'suppress_filters' => true,
 				'meta_key'         => self::META_CONN, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'meta_value'       => $id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			)
@@ -489,7 +488,6 @@ final class Mirror {
 				'post_status'      => 'any',
 				'posts_per_page'   => 1,
 				'no_found_rows'    => true,
-				'suppress_filters' => true,
 				'meta_key'         => self::META_NODE, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'meta_value'       => $id . '|' . $key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			)
