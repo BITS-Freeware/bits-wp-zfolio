@@ -205,15 +205,36 @@ final class Mirror {
 			return $url;
 		}
 
-		$row = Store::get( $connection_id, $slug );
+		$page_id = Store::slugs( $connection_id )[ $slug ] ?? '';
+		$post_id = self::targets( $connection_id )[ $page_id ] ?? 0;
 
-		if ( null === $row ) {
-			return $url;
+		return $post_id > 0 ? (string) get_permalink( $post_id ) : $url;
+	}
+
+	/**
+	 * Published mirrored posts by page id, read once per request.
+	 *
+	 * @param string $connection_id Connection id.
+	 * @return array<string,int>
+	 */
+	private static function targets( string $connection_id ): array {
+		static $cache = array();
+
+		if ( isset( $cache[ $connection_id ] ) ) {
+			return $cache[ $connection_id ];
 		}
 
-		$post = self::find( $connection_id, (string) $row['page_id'] );
+		$out = array();
 
-		return null !== $post && 'publish' === $post->post_status ? (string) get_permalink( $post ) : $url;
+		foreach ( self::posts( $connection_id ) as $post ) {
+			$page = (string) get_post_meta( $post->ID, '_bristlecone_zfolio_page', true );
+
+			if ( '' !== $page && 'publish' === $post->post_status ) {
+				$out[ $page ] = $post->ID;
+			}
+		}
+
+		return $cache[ $connection_id ] = $out;
 	}
 
 	/**

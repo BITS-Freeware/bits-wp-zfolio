@@ -77,9 +77,14 @@ final class Connections {
 		unset( $all[ $id ] );
 		update_option( self::OPTION, $all, false );
 
-		$state = self::all_state();
-		unset( $state[ $id ] );
-		update_option( self::STATE_OPTION, $state, false );
+		delete_option( self::state_option( $id ) );
+
+		$legacy = self::all_state();
+
+		if ( isset( $legacy[ $id ] ) ) {
+			unset( $legacy[ $id ] );
+			update_option( self::STATE_OPTION, $legacy, false );
+		}
 	}
 
 	/**
@@ -109,7 +114,12 @@ final class Connections {
 	 * @return array<string,mixed>
 	 */
 	public static function state( string $id ): array {
-		$state = self::all_state()[ $id ] ?? array();
+		$state = get_option( self::state_option( $id ), null );
+
+		if ( ! is_array( $state ) ) {
+			// Before 0.1.0 was released, every connection shared one option.
+			$state = self::all_state()[ $id ] ?? array();
+		}
 
 		return $state + array(
 			'status'            => 'new',
@@ -131,6 +141,7 @@ final class Connections {
 			'last_webhook_type' => '',
 			'address_rotated'   => 0,
 			'secret_rotated'    => 0,
+			'failures'          => array(),
 		);
 	}
 
@@ -141,11 +152,11 @@ final class Connections {
 	 * @param array<string,mixed> $values Values.
 	 */
 	public static function update_state( string $id, array $values ): void {
-		$state        = self::all_state();
-		$before       = self::state( $id );
-		$state[ $id ] = array_merge( $before, $values );
+		$before = self::state( $id );
 
-		update_option( self::STATE_OPTION, $state, false );
+		// One option per connection, so a write never replaces another
+		// connection's state.
+		update_option( self::state_option( $id ), array_merge( $before, $values ), false );
 
 		if ( isset( $values['status'] ) && $values['status'] !== $before['status'] ) {
 			/**
@@ -159,7 +170,16 @@ final class Connections {
 	}
 
 	/**
-	 * Every connection's raw state.
+	 * The option that holds one connection's state.
+	 *
+	 * @param string $id Connection id.
+	 */
+	private static function state_option( string $id ): string {
+		return self::STATE_OPTION . '_' . $id;
+	}
+
+	/**
+	 * Every connection's raw state, as stored before 0.1.0 (read only).
 	 *
 	 * @return array<string,array<string,mixed>>
 	 */

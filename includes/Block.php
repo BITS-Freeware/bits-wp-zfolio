@@ -54,7 +54,13 @@ final class Block {
 	public static function render( array $attributes ): string {
 		$connection = sanitize_key( (string) ( $attributes['connection'] ?? '' ) );
 		$page       = sanitize_text_field( (string) ( $attributes['page'] ?? '' ) );
-		$inner      = Render::page( $connection, $page );
+
+		// Editor previews come through REST; visitors' views don't.
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST && ! Rest::can_edit() ) {
+			return '';
+		}
+
+		$inner = Render::page( $connection, $page );
 
 		if ( '' === $inner ) {
 			return '';

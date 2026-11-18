@@ -26,7 +26,7 @@ function bristlecone_zfolio_uninstall_site(): void {
 	delete_option( 'bristlecone_zfolio_db_version' );
 
 	$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( 'bristlecone_zfolio_lock_' ) . '%' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-	foreach ( array( '_transient_bristlecone_zfolio_evt_', '_transient_timeout_bristlecone_zfolio_evt_' ) as $bristlecone_zfolio_prefix ) {
+	foreach ( array( 'bristlecone_zfolio_state_', '_transient_bristlecone_zfolio_evt_', '_transient_timeout_bristlecone_zfolio_evt_' ) as $bristlecone_zfolio_prefix ) {
 		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( $bristlecone_zfolio_prefix ) . '%' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 	}
 

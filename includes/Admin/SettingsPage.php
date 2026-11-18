@@ -307,7 +307,11 @@ final class SettingsPage {
 
 		self::render_webhook_fields( $connection, $is_new );
 
-		submit_button( $is_new ? __( 'Add Connection', 'bristlecone-zfolio' ) : __( 'Save Changes', 'bristlecone-zfolio' ) );
+		echo '<p class="submit">';
+		submit_button( $is_new ? __( 'Add Connection', 'bristlecone-zfolio' ) : __( 'Save Changes', 'bristlecone-zfolio' ), 'primary', 'submit', false );
+		echo ' ';
+		submit_button( __( 'Test Address Without Saving', 'bristlecone-zfolio' ), 'secondary', 'test_first', false );
+		echo '</p>';
 		echo '</form>';
 
 		if ( ! $is_new ) {
@@ -434,10 +438,9 @@ final class SettingsPage {
 
 			case 'refresh_page':
 				$page_id = isset( $_POST['page_id'] ) ? sanitize_text_field( wp_unslash( $_POST['page_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- checked above.
-				if ( preg_match( Validator::PAGE_ID, $page_id ) ) {
-					self::refetch_page( $id, $page_id );
-				}
-				$result = ( new Sync() )->run( $id, true );
+				$result = preg_match( Validator::PAGE_ID, $page_id )
+					? ( new Sync() )->refresh_page( $id, $page_id )
+					: array( 'ok' => false, 'message' => __( 'Nothing to do.', 'bristlecone-zfolio' ) );
 				self::redirect( $result['message'], $result['ok'], array( 'view' => $id ) );
 				break;
 
@@ -480,18 +483,6 @@ final class SettingsPage {
 	}
 
 	/**
-	 * Make the next sync refetch one page, by forgetting its hash.
-	 *
-	 * @param string $id      Connection id.
-	 * @param string $page_id Page id.
-	 */
-	private static function refetch_page( string $id, string $page_id ): void {
-		global $wpdb;
-
-		$wpdb->update( Store::table(), array( 'hash' => '' ), array( 'connection_id' => $id, 'page_id' => $page_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-	}
-
-	/**
 	 * Save the add/edit form.
 	 *
 	 * @param string $id Connection id, '' for new.
@@ -505,23 +496,54 @@ final class SettingsPage {
 		$math        = isset( $_POST['math'] ) ? sanitize_key( wp_unslash( $_POST['math'] ) ) : 'mathml';
 		$raw_secret  = isset( $_POST['webhook_secret'] ) ? trim( (string) wp_unslash( $_POST['webhook_secret'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- validated by Signature::valid_secret().
 		$remove_hook = ! empty( $_POST['webhook_remove'] );
+		$test_first  = ! empty( $_POST['test_first'] );
 		$mirror      = ! empty( $_POST['mirror'] );
 		$mirror_slug = isset( $_POST['mirror_slug'] ) ? sanitize_title( wp_unslash( $_POST['mirror_slug'] ) ) : '';
 		// phpcs:enable
 
-		$existing = '' !== $id ? Connections::get( $id ) : null;
-		$address  = (string) ( $existing['address'] ?? '' );
-		$changed  = false;
+		$existing   = '' !== $id ? Connections::get( $id ) : null;
+		$address    = (string) ( $existing['address'] ?? '' );
+		$changed    = false;
+		$normalized = null;
 
 		if ( '' !== $raw_address ) {
 			$normalized = Address::normalize( $raw_address );
 
 			if ( null === $normalized ) {
-				self::redirect( __( 'That doesn’t look like a zFolio feed address. It should start with https:// and contain /feed/v1/.', 'bristlecone-zfolio' ), false, array( 'edit' => '' !== $id ? $id : 'new' ) );
+				self::redirect( __( 'That doesn’t look like a zFolio feed address. It should start with https://zfolio.zuuid.cc/feed/v1/.', 'bristlecone-zfolio' ), false, array( 'edit' => '' !== $id ? $id : 'new' ) );
 			}
 
 			$changed = $normalized !== $address;
-			$address = $normalized;
+		}
+
+		if ( $test_first ) {
+			$target = $normalized ?? $address;
+
+			if ( '' === $target ) {
+				self::redirect( __( 'Paste a feed address to test.', 'bristlecone-zfolio' ), false, array( 'edit' => '' !== $id ? $id : 'new' ) );
+			}
+
+			$result = self::test( $target );
+			self::redirect( $result['message'] . ' ' . __( 'Nothing was saved.', 'bristlecone-zfolio' ), $result['ok'], array( 'edit' => '' !== $id ? $id : 'new' ) );
+		}
+
+		if ( $changed ) {
+			// Check the new address before it replaces a working one: the old
+			// token can't be recovered from the masked value on screen.
+			$check = self::test( (string) $normalized );
+			$known = '' !== $id ? (string) Connections::state( $id )['feed_id'] : '';
+			$back  = array( 'edit' => '' !== $id ? $id : 'new' );
+
+			if ( ! $check['ok'] && Response::PAUSED !== $check['outcome'] ) {
+				/* translators: %s: what went wrong. */
+				self::redirect( sprintf( __( 'The new address didn’t work: %s The current address is kept.', 'bristlecone-zfolio' ), $check['message'] ), false, $back );
+			}
+
+			if ( '' !== $known && '' !== $check['feed_id'] && $check['feed_id'] !== $known ) {
+				self::redirect( __( 'The new address is for a different feed, so the current address is kept. To switch this connection to another feed, choose Clear Content first, or add a new connection.', 'bristlecone-zfolio' ), false, $back );
+			}
+
+			$address = (string) $normalized;
 		}
 
 		if ( '' === $address ) {
@@ -583,7 +605,7 @@ final class SettingsPage {
 	 * Test an address without storing anything.
 	 *
 	 * @param string $address Address.
-	 * @return array{ok:bool,message:string}
+	 * @return array{ok:bool,outcome:string,feed_id:string,message:string}
 	 */
 	private static function test( string $address ): array {
 		$response = ( new Client() )->manifest( $address );
@@ -592,11 +614,13 @@ final class SettingsPage {
 			$manifest = Validator::manifest( (array) $response->data );
 
 			if ( null === $manifest ) {
-				return array( 'ok' => false, 'message' => __( 'zFolio answered, but the plugin can’t read the feed.', 'bristlecone-zfolio' ) );
+				return array( 'ok' => false, 'outcome' => Response::FAILED, 'feed_id' => '', 'message' => __( 'zFolio answered, but the plugin can’t read the feed.', 'bristlecone-zfolio' ) );
 			}
 
 			return array(
 				'ok'      => true,
+				'outcome' => Response::OK,
+				'feed_id' => $manifest['feedId'],
 				/* translators: 1: feed title, 2: number of pages. */
 				'message' => sprintf( _n( 'Connected to “%1$s”, %2$d page.', 'Connected to “%1$s”, %2$d pages.', count( $manifest['pages'] ), 'bristlecone-zfolio' ), $manifest['title'], count( $manifest['pages'] ) ),
 			);
@@ -604,6 +628,8 @@ final class SettingsPage {
 
 		return array(
 			'ok'      => false,
+			'outcome' => $response->outcome,
+			'feed_id' => '',
 			'message' => match ( $response->outcome ) {
 				Response::PAUSED       => __( 'The feed is paused by its owner in zFolio.', 'bristlecone-zfolio' ),
 				Response::REVOKED      => __( 'The feed was turned off in zFolio.', 'bristlecone-zfolio' ),

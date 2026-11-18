@@ -22,6 +22,12 @@ final class Validator {
 	public const HASH      = '/^[0-9a-f]{64}$/';
 
 	/**
+	 * Contract caps.
+	 */
+	public const MAX_PAGES = 2000;
+	public const MAX_TITLE = 1000;
+
+	/**
 	 * Validate a manifest.
 	 *
 	 * @param array<mixed> $data Decoded JSON.
@@ -35,11 +41,17 @@ final class Validator {
 		$feed_id  = self::str( $data['feedId'] ?? null );
 		$revision = $data['revision'] ?? null;
 
-		if ( ! preg_match( self::FEED_ID, $feed_id ) || ! is_int( $revision ) || $revision < 0 ) {
+		if ( ! preg_match( self::FEED_ID, $feed_id ) || ! is_int( $revision ) || $revision < 1 ) {
 			return null;
 		}
 
-		if ( ! is_array( $data['pages'] ?? null ) || ! array_is_list( $data['pages'] ) ) {
+		$allowlist = $data['allowlistVersion'] ?? null;
+
+		if ( ! is_int( $allowlist ) || $allowlist < 1 || mb_strlen( self::str( $data['title'] ?? null ) ) > self::MAX_TITLE ) {
+			return null;
+		}
+
+		if ( ! is_array( $data['pages'] ?? null ) || ! array_is_list( $data['pages'] ) || count( $data['pages'] ) > self::MAX_PAGES ) {
 			return null;
 		}
 
@@ -56,6 +68,10 @@ final class Validator {
 			$hash = self::str( $page['hash'] ?? null );
 
 			if ( ! preg_match( self::PAGE_ID, $id ) || ! self::valid_slug( $slug ) || ! preg_match( self::HASH, $hash ) ) {
+				return null;
+			}
+
+			if ( mb_strlen( self::str( $page['title'] ?? null ) ) > self::MAX_TITLE || ( isset( $page['order'] ) && ( ! is_int( $page['order'] ) || $page['order'] < 0 ) ) ) {
 				return null;
 			}
 
@@ -86,7 +102,7 @@ final class Validator {
 					'id'      => $id,
 					'title'   => self::str( $folder['title'] ?? null ),
 					'parents' => self::ids( $folder['parents'] ?? array(), self::FOLDER_ID ),
-					'order'   => is_int( $folder['order'] ?? null ) ? $folder['order'] : 0,
+					'order'   => is_int( $folder['order'] ?? null ) ? max( 0, $folder['order'] ) : 0,
 				);
 			}
 		}
@@ -96,7 +112,7 @@ final class Validator {
 			'kind'             => 'document' === ( $data['kind'] ?? '' ) ? 'document' : 'folder',
 			'title'            => self::str( $data['title'] ?? null ),
 			'revision'         => $revision,
-			'allowlistVersion' => is_int( $data['allowlistVersion'] ?? null ) ? $data['allowlistVersion'] : 1,
+			'allowlistVersion' => $allowlist,
 			'folders'          => $folders,
 			'pages'            => $pages,
 		);
@@ -124,10 +140,10 @@ final class Validator {
 		$headings = array();
 
 		foreach ( is_array( $data['headings'] ?? null ) ? array_slice( $data['headings'], 0, 1000 ) : array() as $heading ) {
-			if ( is_array( $heading ) && is_int( $heading['level'] ?? null ) && is_string( $heading['id'] ?? null ) ) {
+			if ( is_array( $heading ) && is_int( $heading['level'] ?? null ) && is_string( $heading['id'] ?? null ) && 1 === preg_match( '/^user-content-[A-Za-z0-9_-]{1,200}$/', $heading['id'] ) ) {
 				$headings[] = array(
 					'level' => max( 1, min( 6, $heading['level'] ) ),
-					'text'  => self::str( $heading['text'] ?? null ),
+					'text'  => mb_substr( self::str( $heading['text'] ?? null ), 0, 300 ),
 					'id'    => $heading['id'],
 				);
 			}

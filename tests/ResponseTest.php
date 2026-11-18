@@ -59,4 +59,10 @@ final class ResponseTest extends TestCase {
 		$this->assertSame( '@1798761600', $r->deprecation );
 		$this->assertSame( 'Fri, 01 Oct 2027 00:00:00 GMT', $r->sunset );
 	}
+
+	public function test_a_takedown_code_needs_a_v1_error_body(): void {
+		$this->assertSame( Response::NOT_FOUND, Response::from_parts( 404, array(), '{"code":"paused"}' )->outcome );
+		$this->assertSame( Response::NOT_FOUND, Response::from_parts( 404, array(), '{"apiVersion":2,"code":"revoked"}' )->outcome );
+		$this->assertSame( Response::PAUSED, Response::from_parts( 404, array(), '{"apiVersion":1,"code":"paused","message":"x"}' )->outcome );
+	}
 }

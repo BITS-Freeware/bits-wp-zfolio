@@ -61,10 +61,24 @@ final class Rest {
 	}
 
 	/**
-	 * Editors only.
+	 * The capability to list and preview stored pages.
+	 */
+	public static function capability(): string {
+		/**
+		 * Filters who may list and preview stored zFolio pages in the editor.
+		 * Narrow it (to 'publish_posts', say) for a feed not every author
+		 * should read.
+		 *
+		 * @param string $capability Capability. Default 'edit_posts'.
+		 */
+		return (string) apply_filters( 'bristlecone_zfolio_editor_capability', 'edit_posts' );
+	}
+
+	/**
+	 * Who may pick pages.
 	 */
 	public static function can_edit(): bool {
-		return current_user_can( 'edit_posts' );
+		return current_user_can( self::capability() );
 	}
 
 	/**

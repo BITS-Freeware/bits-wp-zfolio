@@ -58,4 +58,39 @@ final class ValidatorTest extends TestCase {
 		$data['revision']     = '12';
 		$this->assertNull( Validator::manifest( $data ) );
 	}
+
+	public function test_schema_caps_are_enforced(): void {
+		$cases = array(
+			'revision 0'       => static function ( array &$m ): void { $m['revision'] = 0; },
+			'allowlist -3'     => static function ( array &$m ): void { $m['allowlistVersion'] = -3; },
+			'no allowlist'     => static function ( array &$m ): void { unset( $m['allowlistVersion'] ); },
+			'long title'       => static function ( array &$m ): void { $m['title'] = str_repeat( 'x', 1001 ); },
+			'long page title'  => static function ( array &$m ): void { $m['pages'][0]['title'] = str_repeat( 'x', 1001 ); },
+			'negative order'   => static function ( array &$m ): void { $m['pages'][0]['order'] = -5; },
+			'too many pages'   => static function ( array &$m ): void { $m['pages'] = array_fill( 0, 2001, $m['pages'][0] ); },
+		);
+
+		foreach ( $cases as $name => $change ) {
+			$data = $this->fixture( 'manifest.json' );
+			$change( $data );
+			$this->assertNull( Validator::manifest( $data ), $name );
+		}
+
+		$data          = $this->fixture( 'manifest.json' );
+		$data['title'] = str_repeat( 'é', 1000 );
+		$this->assertNotNull( Validator::manifest( $data ), '1,000 characters, not bytes' );
+	}
+
+	public function test_heading_ids_need_the_prefix(): void {
+		$data             = $this->fixture( 'page.json' );
+		$data['headings'] = array(
+			array( 'level' => 2, 'text' => 'Fine', 'id' => 'user-content-fine' ),
+			array( 'level' => 2, 'text' => 'Bad', 'id' => 'not-prefixed<script>' ),
+			array( 'level' => 2, 'text' => 'Bad too', 'id' => 'user-content-"><x' ),
+		);
+
+		$page = Validator::page( $data, 'zfd_Q2hhbmdlTWVJbkZpeHR1MA' );
+
+		$this->assertSame( array( 'user-content-fine' ), array_column( $page['headings'], 'id' ) );
+	}
 }

@@ -26,6 +26,23 @@ final class Render {
 	private static array $urls = array();
 
 	/**
+	 * Slug maps for this request, by connection.
+	 *
+	 * @var array<string,array<string,string>>
+	 */
+	private static array $slugs = array();
+
+	/**
+	 * A connection's slug to page id map, read once per request.
+	 *
+	 * @param string $connection_id Connection id.
+	 * @return array<string,string>
+	 */
+	private static function slugs( string $connection_id ): array {
+		return self::$slugs[ $connection_id ] ??= Store::slugs( $connection_id );
+	}
+
+	/**
 	 * HTML for one page.
 	 *
 	 * @param string $connection_id Connection id.
@@ -53,8 +70,10 @@ final class Render {
 
 		$html = (string) $row['html'];
 
-		if ( 0 === (int) $row['allowlist_version'] ) {
+		if ( (int) $row['sanitizer'] < Sanitizer::GENERATION ) {
+			// Cleaned by an older sanitizer: clean again once, and keep the result.
 			$html = Sanitizer::clean( $html );
+			Store::save_recleaned( $connection_id, (string) $row['page_id'], $html );
 		}
 
 		if ( 'tex' === $connection['math'] ) {
@@ -94,14 +113,14 @@ final class Render {
 			return self::$urls[ $key ];
 		}
 
-		$url = null;
-		$row = Store::get( $connection_id, $slug );
+		$url     = null;
+		$page_id = self::slugs( $connection_id )[ $slug ] ?? null;
 
-		if ( null !== $row ) {
-			$posts = Refs::posts_for( $connection_id, (string) $row['page_id'] );
+		if ( null !== $page_id ) {
+			$post_id = Refs::link_targets( $connection_id )[ $page_id ] ?? 0;
 
-			if ( $posts ) {
-				$permalink = get_permalink( $posts[0] );
+			if ( $post_id > 0 ) {
+				$permalink = get_permalink( $post_id );
 				$url       = is_string( $permalink ) ? $permalink : null;
 			}
 		}

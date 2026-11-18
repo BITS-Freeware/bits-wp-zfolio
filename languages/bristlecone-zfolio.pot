@@ -1,0 +1,664 @@
+# Copyright (C) 2026 Bristlecone IT Services
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: zFolio for WordPress 0.1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/BITS-Freeware/bits-wp-zfolio/issues\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-11-17T18:50:31+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: bristlecone-zfolio\n"
+
+#. Plugin Name of the plugin
+#: bristlecone-zfolio.php
+#: includes/Admin/SettingsPage.php:73
+#: includes/Admin/SettingsPage.php:133
+#: includes/Admin/SettingsPage.php:729
+msgid "zFolio for WordPress"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: bristlecone-zfolio.php
+msgid "https://bristleconeit.com/bristlecone-zfolio"
+msgstr ""
+
+#. Description of the plugin
+#: bristlecone-zfolio.php
+msgid "Show zFolio documents and folders on your WordPress site, in your theme. Content is cached in WordPress and refreshed when you update it in zFolio."
+msgstr ""
+
+#. Author of the plugin
+#: bristlecone-zfolio.php
+msgid "Bristlecone IT Services"
+msgstr ""
+
+#. Author URI of the plugin
+#: bristlecone-zfolio.php
+msgid "https://bristleconeit.com"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:60
+#: includes/Admin/SettingsPage.php:61
+msgid "Bristlecone"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:74
+msgid "zFolio"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:105
+msgid "Settings"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:154
+msgid "Each connection reads one zFolio feed. In zFolio, choose Connect to WordPress on a document or folder, then paste its feed address here."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:155
+#: includes/Admin/SettingsPage.php:258
+#: includes/Admin/SettingsPage.php:311
+msgid "Add Connection"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:162
+#: blocks/page/index.js:63
+msgid "Connection"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:162
+msgid "Status"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:162
+msgid "Pages"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:162
+msgid "Last Checked"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:162
+#: includes/Admin/SettingsPage.php:220
+msgid "Shortcode"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:162
+msgid "Actions"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:178
+msgid "Refresh Now"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:179
+msgid "Test Connection"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:180
+msgid "Edit"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:186
+msgid "Mirror Address"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:187
+msgid "Mirrored pages live under this address on your site. Changing it moves every mirrored page."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:192
+msgid "Save Address"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:195
+msgid "Clear All Content"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:196
+msgid "Deletes every stored page and fetches each feed again on its next update. Connections stay."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:197
+msgid "Clear All"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:197
+msgid "Delete all stored zFolio content and fetch it again?"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:209
+#: includes/Admin/SettingsPage.php:257
+msgid "All connections"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:216
+msgid "No pages yet. Choose Refresh Now on the connections list."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:220
+#: blocks/page/index.js:73
+msgid "Page"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:220
+msgid "Fetched"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:226
+msgid "View"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:231
+msgid "Refresh"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:258
+msgid "Edit Connection"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:267
+msgid "Name"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:269
+msgid "Shown to editors when they pick a page. Leave empty to use the feed’s title."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:271
+msgid "Feed Address"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:276
+msgid "Paste the address from Connect to WordPress in zFolio. It works like a password, so it is hidden once saved."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:276
+msgid "Leave empty to keep the current address. Paste a new one if the owner rotated it."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:278
+msgid "Check for Updates"
+msgstr ""
+
+#. translators: %d: minutes.
+#: includes/Admin/SettingsPage.php:281
+#, php-format
+msgid "Every %d minute"
+msgid_plural "Every %d minutes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/Admin/SettingsPage.php:285
+msgid "When the Feed Is Paused or Turned Off"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:286
+msgid "Hide its content"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:287
+msgid "Keep showing the last content, and notify admins"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:290
+msgid "Math"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:291
+msgid "Show formulas (MathML)"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:292
+msgid "Show the TeX source instead"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:296
+msgid "Mirror Mode"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:297
+msgid "Publish every page of this feed as a WordPress page, in the same folders"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:298
+msgid "Pages appear, change, and disappear with the feed, and keep working links when a page moves. They are read-only in WordPress; edit them in zFolio. Turning this off deletes the mirrored pages."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:299
+msgid "Address"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:299
+msgid "from the feed title"
+msgstr ""
+
+#. translators: %s: URL.
+#: includes/Admin/SettingsPage.php:302
+#, php-format
+msgid "Mirrored at %s"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:311
+msgid "Save Changes"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:313
+msgid "Test Address Without Saving"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:318
+msgid "Remove"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:319
+msgid "Clear Content"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:319
+msgid "Delete this connection’s stored pages and fetch them again?"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:320
+msgid "Delete Connection"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:320
+msgid "Delete this connection and its stored pages? Blocks and shortcodes that use it will show nothing."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:331
+msgid "Webhooks (Optional)"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:332
+msgid "With a webhook, zFolio tells your site the moment you choose Update, instead of waiting for the next check. Scheduled checks keep running either way. Your site must be reachable from the internet over HTTPS."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:335
+msgid "Add the connection first. Its webhook address appears here once it is saved."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:346
+msgid "Webhook Address"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:348
+msgid "In zFolio, open the feed’s webhooks, add an endpoint, and paste this address."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:350
+msgid "This site doesn’t use HTTPS, so zFolio can’t send it webhooks. Scheduled checks still work."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:354
+msgid "Webhook Secret"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:359
+msgid "Paste the secret zFolio shows when you add the endpoint. It starts with zfwh_ and is shown only once."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:359
+msgid "Leave empty to keep the current secret. Paste the new one if you rolled it in zFolio."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:361
+msgid "Turn webhooks off for this connection"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:366
+msgid "Last Webhook"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:371
+msgid "Choose Test on the endpoint in zFolio to check that webhooks arrive."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:409
+msgid "You are not allowed to do that."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:420
+msgid "That connection no longer exists."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:443
+#: includes/Admin/SettingsPage.php:482
+msgid "Nothing to do."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:452
+msgid "Content cleared. It will be fetched again in a moment."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:462
+msgid "All content cleared. It will be fetched again in a moment."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:469
+msgid "Mirror address saved."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:478
+msgid "Connection deleted."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:513
+msgid "That doesn’t look like a zFolio feed address. It should start with https://zfolio.zuuid.cc/feed/v1/."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:523
+msgid "Paste a feed address to test."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:527
+msgid "Nothing was saved."
+msgstr ""
+
+#. translators: %s: what went wrong.
+#: includes/Admin/SettingsPage.php:539
+#, php-format
+msgid "The new address didn’t work: %s The current address is kept."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:543
+msgid "The new address is for a different feed, so the current address is kept. To switch this connection to another feed, choose Clear Content first, or add a new connection."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:550
+msgid "A feed address is required."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:560
+msgid "That doesn’t look like a zFolio webhook secret. It should start with zfwh_."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:601
+msgid "Connection added. Its pages will be fetched in a moment."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:601
+msgid "Connection saved."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:617
+msgid "zFolio answered, but the plugin can’t read the feed."
+msgstr ""
+
+#. translators: 1: feed title, 2: number of pages.
+#: includes/Admin/SettingsPage.php:625
+#, php-format
+msgid "Connected to “%1$s”, %2$d page."
+msgid_plural "Connected to “%1$s”, %2$d pages."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/Admin/SettingsPage.php:634
+#: includes/Sync.php:126
+msgid "The feed is paused by its owner in zFolio."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:635
+#: includes/Sync.php:127
+msgid "The feed was turned off in zFolio."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:636
+msgid "zFolio doesn’t recognize this feed address."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:637
+msgid "zFolio asked the site to slow down. Try again in a minute."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:638
+#: includes/Sync.php:132
+msgid "zFolio no longer serves this version of the feed. Update the plugin."
+msgstr ""
+
+#. translators: %s: short technical reason.
+#: includes/Admin/SettingsPage.php:640
+#, php-format
+msgid "zFolio couldn’t be reached (%s)."
+msgstr ""
+
+#. translators: %s: connection name.
+#: includes/Admin/SettingsPage.php:694
+#, php-format
+msgid "%s: zFolio retired this version of its feed. Update zFolio for WordPress to keep the content current."
+msgstr ""
+
+#. translators: %s: connection name.
+#: includes/Admin/SettingsPage.php:697
+#, php-format
+msgid "%s: zFolio will retire this version of its feed. Update zFolio for WordPress before then."
+msgstr ""
+
+#. translators: 1: connection name, 2: date.
+#: includes/Admin/SettingsPage.php:703
+#, php-format
+msgid "%1$s: the owner rotated the feed address in zFolio. Paste the new address before %2$s, when the old one stops working."
+msgstr ""
+
+#. translators: %s: connection name.
+#: includes/Admin/SettingsPage.php:705
+#, php-format
+msgid "%s: the owner rotated the feed address in zFolio. Paste the new address."
+msgstr ""
+
+#. translators: 1: connection name, 2: date.
+#: includes/Admin/SettingsPage.php:711
+#, php-format
+msgid "%1$s: the webhook secret was rolled in zFolio. Paste the new secret before %2$s, or webhooks will stop arriving."
+msgstr ""
+
+#. translators: %s: connection name.
+#: includes/Admin/SettingsPage.php:713
+#, php-format
+msgid "%s: the webhook secret was rolled in zFolio. Paste the new secret."
+msgstr ""
+
+#. translators: %s: connection name.
+#: includes/Admin/SettingsPage.php:719
+#, php-format
+msgid "%s: the feed is paused by its owner in zFolio."
+msgstr ""
+
+#. translators: %s: connection name.
+#: includes/Admin/SettingsPage.php:721
+#, php-format
+msgid "%s: the feed was turned off in zFolio."
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:733
+msgid "Open zFolio settings"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:743
+msgid "Connected"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:744
+msgid "Paused in zFolio"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:745
+msgid "Turned off in zFolio"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:746
+msgid "Waiting for the first update"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:750
+msgid "still fetching pages"
+msgstr ""
+
+#. translators: %s: short technical reason.
+#: includes/Admin/SettingsPage.php:755
+#, php-format
+msgid "last problem: %s"
+msgstr ""
+
+#: includes/Admin/SettingsPage.php:768
+msgid "Never"
+msgstr ""
+
+#. translators: %s: human time difference.
+#: includes/Admin/SettingsPage.php:772
+#, php-format
+msgid "%s ago"
+msgstr ""
+
+#: includes/Mirror/Mirror.php:85
+msgid "zFolio Pages"
+msgstr ""
+
+#: includes/Mirror/Mirror.php:86
+#: blocks/page/index.js:84
+#: blocks/page/index.js:104
+msgid "zFolio Page"
+msgstr ""
+
+#: includes/Render.php:56
+msgid "Choose a zFolio connection and page."
+msgstr ""
+
+#: includes/Render.php:62
+msgid "This zFolio feed is paused or turned off, so this content is hidden."
+msgstr ""
+
+#: includes/Render.php:68
+msgid "This zFolio page hasn’t been fetched yet."
+msgstr ""
+
+#: includes/Sync.php:65
+msgid "This connection has no feed address."
+msgstr ""
+
+#: includes/Sync.php:71
+msgid "zFolio asked the site to wait before the next request. Try again in a minute."
+msgstr ""
+
+#: includes/Sync.php:75
+msgid "An update is already running for this connection."
+msgstr ""
+
+#: includes/Sync.php:107
+#: includes/Sync.php:161
+msgid "No changes since the last update."
+msgstr ""
+
+#: includes/Sync.php:112
+msgid "zFolio asked the site to slow down. The next update will wait."
+msgstr ""
+
+#: includes/Sync.php:137
+msgid "zFolio doesn’t recognize this feed address. If the owner rotated it, paste the new address."
+msgstr ""
+
+#: includes/Sync.php:144
+msgid "zFolio couldn’t be reached. The site keeps showing what it has."
+msgstr ""
+
+#: includes/Sync.php:151
+msgid "zFolio sent a feed the plugin can’t read. The site keeps showing what it has."
+msgstr ""
+
+#: includes/Sync.php:156
+msgid "This address now points at a different feed. Clear the connection’s content before using it."
+msgstr ""
+
+#. translators: %d: number of pages.
+#: includes/Sync.php:219
+#, php-format
+msgid "%d page could not be fetched"
+msgid_plural "%d pages could not be fetched"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/Sync.php:221
+msgid "some pages could not be fetched yet"
+msgstr ""
+
+#. translators: 1: pages updated, 2: pages removed.
+#: includes/Sync.php:260
+#, php-format
+msgid "Updated %1$d pages and removed %2$d."
+msgstr ""
+
+#. translators: %d: pages still to fetch.
+#: includes/Sync.php:264
+#, php-format
+msgid "%d more will follow in a few minutes."
+msgstr ""
+
+#. translators: %d: number of pages.
+#: includes/Sync.php:269
+#, php-format
+msgid "%d page could not be fetched and will be tried again when the feed next changes."
+msgid_plural "%d pages could not be fetched and will be tried again when the feed next changes."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/Sync.php:271
+msgid "Some pages could not be fetched this time and will be tried again."
+msgstr ""
+
+#: includes/Sync.php:289
+msgid "That page isn’t stored yet. Choose Refresh Now first."
+msgstr ""
+
+#: includes/Sync.php:293
+msgid "An update is running or zFolio asked the site to wait. Try again in a minute."
+msgstr ""
+
+#: includes/Sync.php:304
+msgid "zFolio didn’t send that page. The site keeps showing what it has."
+msgstr ""
+
+#: includes/Sync.php:312
+msgid "Page updated."
+msgstr ""
+
+#: blocks/page/index.js:52
+msgid "Choose a connection"
+msgstr ""
+
+#: blocks/page/index.js:55
+msgid "Choose a page"
+msgstr ""
+
+#: blocks/page/index.js:96
+msgid "Add a zFolio connection under Bristlecone → zFolio first."
+msgstr ""
+
+#: blocks/page/block.json
+msgctxt "block title"
+msgid "zFolio Page"
+msgstr ""
+
+#: blocks/page/block.json
+msgctxt "block description"
+msgid "Show one page from a zFolio feed."
+msgstr ""
+
+#: blocks/page/block.json
+msgctxt "block keyword"
+msgid "zfolio"
+msgstr ""
+
+#: blocks/page/block.json
+msgctxt "block keyword"
+msgid "documentation"
+msgstr ""
+
+#: blocks/page/block.json
+msgctxt "block keyword"
+msgid "feed"
+msgstr ""
