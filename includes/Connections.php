@@ -117,7 +117,7 @@ final class Connections {
 		$state = get_option( self::state_option( $id ), null );
 
 		if ( ! is_array( $state ) ) {
-			// Before 0.1.0 was released, every connection shared one option.
+			// Before 1.0.0 was released, every connection shared one option.
 			$state = self::all_state()[ $id ] ?? array();
 		}
 
@@ -179,7 +179,7 @@ final class Connections {
 	}
 
 	/**
-	 * Every connection's raw state, as stored before 0.1.0 (read only).
+	 * Every connection's raw state, as stored before 1.0.0 (read only).
 	 *
 	 * @return array<string,array<string,mixed>>
 	 */

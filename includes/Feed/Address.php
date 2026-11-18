@@ -21,7 +21,7 @@ final class Address {
 	private const PATH_PATTERN = '#^/feed/v1/([A-Za-z0-9_-]{16,128})/?$#';
 
 	/**
-	 * zFolio's feed host.
+	 * The feed host zFolio serves feeds from.
 	 */
 	public const HOST = 'zfolio.zuuid.cc';
 
@@ -57,7 +57,7 @@ final class Address {
 			return null;
 		}
 
-		$parts = parse_url( $raw );
+		$parts = wp_parse_url( $raw );
 
 		if ( ! is_array( $parts ) ) {
 			return null;

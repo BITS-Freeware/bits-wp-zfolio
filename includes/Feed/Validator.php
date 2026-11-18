@@ -51,7 +51,7 @@ final class Validator {
 			return null;
 		}
 
-		if ( ! is_array( $data['pages'] ?? null ) || ! array_is_list( $data['pages'] ) || count( $data['pages'] ) > self::MAX_PAGES ) {
+		if ( ! is_array( $data['pages'] ?? null ) || array_values( $data['pages'] ) !== $data['pages'] || count( $data['pages'] ) > self::MAX_PAGES ) {
 			return null;
 		}
 
@@ -126,7 +126,7 @@ final class Validator {
 	 * @return array<string,mixed>|null
 	 */
 	public static function page( array $data, string $feed_id ): ?array {
-		if ( 1 !== ( $data['apiVersion'] ?? null ) || $feed_id !== ( $data['feedId'] ?? null ) ) {
+		if ( 1 !== ( $data['apiVersion'] ?? null ) || ( $data['feedId'] ?? null ) !== $feed_id ) {
 			return null;
 		}
 

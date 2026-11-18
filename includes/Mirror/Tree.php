@@ -24,9 +24,9 @@ final class Tree {
 	/**
 	 * Build the nodes.
 	 *
-	 * @param string                           $kind      'folder' or 'document'.
-	 * @param string                           $root_slug Slug of the root page.
-	 * @param string                           $title     Feed title.
+	 * @param string                            $kind      'folder' or 'document'.
+	 * @param string                            $root_slug Slug of the root page.
+	 * @param string                            $title     Feed title.
 	 * @param array<string,array<string,mixed>> $folders   Folders by id: title, parents, order.
 	 * @param array<int,array<string,mixed>>    $pages     Pages: page_id, slug, title, description, parents, sort_order.
 	 * @return array<string,array{key:string,parent:string,slug:string,title:string,order:int,page:string,excerpt:string}>
@@ -64,7 +64,7 @@ final class Tree {
 			}
 
 			$name         = (string) $folder['title'];
-			$nodes[ $id ]   = self::node( (string) $id, $parent, self::unique( $taken, $parent, sanitize_title( $name ), 'folder' ), $name, (int) $folder['order'], '', '' );
+			$nodes[ $id ] = self::node( (string) $id, $parent, self::unique( $taken, $parent, sanitize_title( $name ), 'folder' ), $name, (int) $folder['order'], '', '' );
 		}
 
 		foreach ( $pages as $page ) {

@@ -74,7 +74,7 @@ final class Cache {
 			sg_cachepress_purge_cache();
 		}
 
-		do_action( 'litespeed_purge_all' );
+		do_action( 'litespeed_purge_all' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- LiteSpeed Cache's own hook.
 
 		/**
 		 * Fires after the plugin asked page caches to clear everything.
@@ -136,6 +136,6 @@ final class Cache {
 			sg_cachepress_purge_cache( $url );
 		}
 
-		do_action( 'litespeed_purge_post', $post_id );
+		do_action( 'litespeed_purge_post', $post_id ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- LiteSpeed Cache's own hook.
 	}
 }

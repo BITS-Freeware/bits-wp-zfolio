@@ -16,6 +16,8 @@ SECURITY.md
 tests
 phpunit.xml
 phpunit.xml.dist
+phpcs.xml
+phpcs.xml.dist
 .phpunit.cache
 .phpunit.result.cache
 
@@ -29,3 +31,11 @@ node_modules
 
 # Reinstalled production-only in the release zip
 vendor
+
+# Development only (no runtime dependencies)
+README.md
+composer.json
+composer.lock
+
+# WordPress.org listing assets (uploaded to SVN /assets)
+.wordpress-org

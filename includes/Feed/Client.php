@@ -57,10 +57,10 @@ class Client {
 		$result = wp_safe_remote_get(
 			$url,
 			array(
-				'timeout'     => 15,
-				'redirection' => 0,
-				'user-agent'  => self::user_agent(),
-				'headers'     => $headers,
+				'timeout'             => 15,
+				'redirection'         => 0,
+				'user-agent'          => self::user_agent(),
+				'headers'             => $headers,
 				// Manifests are capped at 4 MB, pages share a 50 MB feed cap.
 				'limit_response_size' => 8 * MB_IN_BYTES,
 			)

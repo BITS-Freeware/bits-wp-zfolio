@@ -15,7 +15,7 @@ namespace Bristlecone\Zfolio;
  */
 final class Store {
 
-	public const DB_VERSION        = '2';
+	public const DB_VERSION         = '2';
 	private const DB_VERSION_OPTION = 'bristlecone_zfolio_db_version';
 
 	/**
@@ -81,7 +81,7 @@ final class Store {
 		global $wpdb;
 
 		$table = self::table();
-		$wpdb->query( "DROP TABLE IF EXISTS {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery -- table name is ours.
+		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $table ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- the plugin's own table.
 		delete_option( self::DB_VERSION_OPTION );
 	}
 
@@ -106,7 +106,7 @@ final class Store {
 		global $wpdb;
 
 		$table = self::table();
-		$rows  = $wpdb->get_results( $wpdb->prepare( "SELECT page_id, CASE WHEN html = '' THEN '' ELSE hash END AS hash, slug, title, description, parents, sort_order FROM {$table} WHERE connection_id = %s", $connection_id ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery
+		$rows  = $wpdb->get_results( $wpdb->prepare( "SELECT page_id, CASE WHEN html = '' THEN '' ELSE hash END AS hash, slug, title, description, parents, sort_order FROM %i WHERE connection_id = %s", $table, $connection_id ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 
 		$out = array();
 
@@ -135,7 +135,7 @@ final class Store {
 			|| $stored['slug'] !== $meta['slug']
 			|| $stored['title'] !== $meta['title']
 			|| $stored['description'] !== $meta['description']
-			|| $stored['parents'] !== (string) wp_json_encode( $meta['parents'] )
+			|| (string) wp_json_encode( $meta['parents'] ) !== $stored['parents']
 			|| $stored['order'] !== (int) $meta['order'];
 	}
 
@@ -151,7 +151,8 @@ final class Store {
 		$table = self::table();
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->prepare(
-				"INSERT INTO {$table} (connection_id, page_id, slug, title, description, parents, sort_order, hash, html, headings) VALUES (%s, %s, %s, %s, %s, %s, %d, '', '', '[]') ON DUPLICATE KEY UPDATE slug = VALUES(slug), title = VALUES(title), description = VALUES(description), parents = VALUES(parents), sort_order = VALUES(sort_order)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"INSERT INTO %i (connection_id, page_id, slug, title, description, parents, sort_order, hash, html, headings) VALUES (%s, %s, %s, %s, %s, %s, %d, '', '', '[]') ON DUPLICATE KEY UPDATE slug = VALUES(slug), title = VALUES(title), description = VALUES(description), parents = VALUES(parents), sort_order = VALUES(sort_order)",
+				$table,
 				$connection_id,
 				$meta['id'],
 				$meta['slug'],
@@ -207,7 +208,17 @@ final class Store {
 	public static function save_recleaned( string $connection_id, string $page_id, string $html ): void {
 		global $wpdb;
 
-		$wpdb->update( self::table(), array( 'html' => $html, 'sanitizer' => Content\Sanitizer::GENERATION ), array( 'connection_id' => $connection_id, 'page_id' => $page_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- the plugin's own table.
+			self::table(),
+			array(
+				'html'      => $html,
+				'sanitizer' => Content\Sanitizer::GENERATION,
+			),
+			array(
+				'connection_id' => $connection_id,
+				'page_id'       => $page_id,
+			)
+		); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 	}
 
 	/**
@@ -220,7 +231,7 @@ final class Store {
 		global $wpdb;
 
 		$table = self::table();
-		$rows  = $wpdb->get_results( $wpdb->prepare( "SELECT page_id, slug FROM {$table} WHERE connection_id = %s", $connection_id ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery
+		$rows  = $wpdb->get_results( $wpdb->prepare( 'SELECT page_id, slug FROM %i WHERE connection_id = %s', $table, $connection_id ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 
 		$out = array();
 
@@ -234,7 +245,7 @@ final class Store {
 	/**
 	 * Delete pages of a connection that are not in the list.
 	 *
-	 * @param string       $connection_id Connection id.
+	 * @param string            $connection_id Connection id.
 	 * @param list<string>      $keep          Page ids to keep.
 	 * @param list<string>|null $stored        Stored page ids, when already known.
 	 * @return list<string> Page ids deleted.
@@ -257,7 +268,13 @@ final class Store {
 		global $wpdb;
 
 		foreach ( $page_ids as $page_id ) {
-			$wpdb->delete( self::table(), array( 'connection_id' => $connection_id, 'page_id' => $page_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->delete( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- the plugin's own table.
+				self::table(),
+				array(
+					'connection_id' => $connection_id,
+					'page_id'       => $page_id,
+				)
+			); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		}
 	}
 
@@ -284,7 +301,7 @@ final class Store {
 
 		$table  = self::table();
 		$column = str_starts_with( $page, 'pg_' ) ? 'page_id' : 'slug';
-		$row    = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE connection_id = %s AND {$column} = %s", $connection_id, $page ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery
+		$row    = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE connection_id = %s AND %i = %s', $table, $connection_id, $column, $page ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 
 		return is_array( $row ) ? self::decode( $row ) : null;
 	}
@@ -299,7 +316,7 @@ final class Store {
 		global $wpdb;
 
 		$table = self::table();
-		$rows  = $wpdb->get_results( $wpdb->prepare( "SELECT page_id, slug, title, description, parents, sort_order, hash, fetched_at, (html <> '') AS has_html FROM {$table} WHERE connection_id = %s ORDER BY sort_order, id", $connection_id ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery
+		$rows  = $wpdb->get_results( $wpdb->prepare( "SELECT page_id, slug, title, description, parents, sort_order, hash, fetched_at, (html <> '') AS has_html FROM %i WHERE connection_id = %s ORDER BY sort_order, id", $table, $connection_id ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 
 		return array_map( array( self::class, 'decode' ), (array) $rows );
 	}
@@ -314,7 +331,7 @@ final class Store {
 
 		$table = self::table();
 
-		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE connection_id = %s AND html <> ''", $connection_id ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery
+		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE connection_id = %s AND html <> ''", $table, $connection_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 	}
 
 	/**
