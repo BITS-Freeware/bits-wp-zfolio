@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: zFolio
+ * Plugin Name: zFolio Connector
  * Plugin URI: https://bristleconeit.com/bristlecone-zfolio
  * Description: Show zFolio documents and folders on your WordPress site, in your theme. Content is cached in WordPress and refreshed when you update it in zFolio.
  * Version: 1.0.0

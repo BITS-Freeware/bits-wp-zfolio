@@ -1,6 +1,6 @@
 <?php
 /**
- * Uninstall the zFolio plugin: remove its table, options, events and post
+ * Uninstall zFolio Connector: remove its table, options, events and post
  * meta from every site.
  *
  * @package BristleconeZfolio

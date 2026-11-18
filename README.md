@@ -1,4 +1,4 @@
-# zFolio (WordPress plugin)
+# zFolio Connector
 
 A WordPress plugin by [Bristlecone IT Services](https://bristleconeit.com) that brings zFolio to WordPress sites.
 

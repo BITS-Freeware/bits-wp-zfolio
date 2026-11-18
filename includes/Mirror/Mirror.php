@@ -63,6 +63,7 @@ final class Mirror {
 		add_filter( 'map_meta_cap', array( self::class, 'read_only' ), 10, 4 );
 		add_filter( 'bristlecone_zfolio_page_url', array( self::class, 'page_url' ), 5, 3 );
 		add_action( 'template_redirect', array( self::class, 'redirect_moved' ) );
+		add_filter( 'single_template_hierarchy', array( self::class, 'page_template' ) );
 	}
 
 	/**
@@ -154,10 +155,66 @@ final class Mirror {
 		$page                    = (string) get_post_meta( $post->ID, '_bristlecone_zfolio_page', true );
 
 		if ( '' !== $page ) {
-			return Render::page( $connection_id, $page, 'zfolio-mirror' );
+			return self::without_title( Render::page( $connection_id, $page, 'zfolio-mirror' ), $post );
 		}
 
 		return self::children_list( $post );
+	}
+
+	/**
+	 * Drop a page's opening heading when it only repeats the title the theme
+	 * already shows.
+	 *
+	 * @param string  $html Rendered page.
+	 * @param WP_Post $post Mirrored post.
+	 */
+	private static function without_title( string $html, WP_Post $post ): string {
+		/**
+		 * Whether mirrored pages drop an opening heading that repeats their title.
+		 *
+		 * @param bool    $strip Default true.
+		 * @param WP_Post $post  Mirrored post.
+		 */
+		if ( ! apply_filters( 'bristlecone_zfolio_mirror_strip_title', true, $post ) ) {
+			return $html;
+		}
+
+		if ( ! preg_match( '#^(<div[^>]*>)\s*<h1\b[^>]*>(.*?)</h1>\s*#s', $html, $match ) ) {
+			return $html;
+		}
+
+		$heading = trim( html_entity_decode( wp_strip_all_tags( $match[2] ), ENT_QUOTES, 'UTF-8' ) );
+		$title   = trim( html_entity_decode( $post->post_title, ENT_QUOTES, 'UTF-8' ) );
+
+		if ( $heading !== $title ) {
+			return $html;
+		}
+
+		return $match[1] . substr( $html, strlen( $match[0] ) );
+	}
+
+	/**
+	 * Mirrored pages use the theme's page template, not its post template.
+	 *
+	 * @param string[] $templates Candidate templates, most specific first.
+	 * @return string[]
+	 */
+	public static function page_template( array $templates ): array {
+		$post = get_queried_object();
+
+		if ( ! $post instanceof WP_Post || self::TYPE !== $post->post_type ) {
+			return $templates;
+		}
+
+		$at = array_search( 'single.php', $templates, true );
+
+		if ( false === $at ) {
+			return $templates;
+		}
+
+		array_splice( $templates, (int) $at, 0, array( 'page.php' ) );
+
+		return $templates;
 	}
 
 	/**
