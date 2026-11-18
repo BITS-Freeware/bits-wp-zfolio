@@ -21,7 +21,7 @@ final class Links {
 	/**
 	 * Rewrite feed links.
 	 *
-	 * @param string                     $html     Sanitized HTML.
+	 * @param string                   $html     Sanitized HTML.
 	 * @param callable(string):?string $resolver Slug => URL, or null.
 	 */
 	public static function rewrite( string $html, callable $resolver ): string {

@@ -12,8 +12,10 @@
     "php": ">=8.3"
   },
   "require-dev": {
+    "phpcompatibility/phpcompatibility-wp": "^2.1",
     "phpunit/phpunit": "^10.5",
-    "roots/wordpress-no-content": "6.4.*"
+    "roots/wordpress-no-content": "6.4.*",
+    "wp-coding-standards/wpcs": "^3.1"
   },
   "autoload-dev": {
     "psr-4": {
@@ -26,10 +28,13 @@
       "php": "8.3.0"
     },
     "allow-plugins": {
-      "roots/wordpress-core-installer": true
+      "roots/wordpress-core-installer": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true
     }
   },
   "scripts": {
-    "test": "phpunit"
+    "test": "phpunit",
+    "lint": "phpcs",
+    "lint:fix": "phpcbf"
   }
 }

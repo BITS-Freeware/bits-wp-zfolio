@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: zFolio for WordPress 0.1.0\n"
+"Project-Id-Version: zFolio for WordPress 1.0.0\n"
 "Report-Msgid-Bugs-To: https://github.com/BITS-Freeware/bits-wp-zfolio/issues\n"
 "Last-Translator: \n"
 "Language-Team: \n"

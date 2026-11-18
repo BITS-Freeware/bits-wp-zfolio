@@ -21,6 +21,7 @@ require dirname( __DIR__ ) . '/tests/Support/stubs.php';
 require $wp . 'wp-includes/plugin.php';
 require $wp . 'wp-includes/formatting.php';
 require $wp . 'wp-includes/kses.php';
+require $wp . 'wp-includes/http.php';
 add_filter( 'sanitize_title', 'sanitize_title_with_dashes', 10, 3 );
 
 foreach ( array( 'span', 'text-replacement', 'attribute-token', 'tag-processor' ) as $html_api ) {

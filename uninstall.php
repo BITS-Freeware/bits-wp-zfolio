@@ -32,7 +32,15 @@ function bristlecone_zfolio_uninstall_site(): void {
 
 	delete_post_meta_by_key( '_bristlecone_zfolio_ref' );
 
-	$bristlecone_zfolio_posts = get_posts( array( 'post_type' => 'bristlecone_zfolio', 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids', 'no_found_rows' => true ) );
+	$bristlecone_zfolio_posts = get_posts(
+		array(
+			'post_type'      => 'bristlecone_zfolio',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+		)
+	);
 	foreach ( $bristlecone_zfolio_posts as $bristlecone_zfolio_post ) {
 		wp_delete_post( (int) $bristlecone_zfolio_post, true );
 	}
@@ -45,7 +53,12 @@ function bristlecone_zfolio_uninstall_site(): void {
 }
 
 if ( is_multisite() ) {
-	foreach ( get_sites( array( 'fields' => 'ids', 'number' => 0 ) ) as $bristlecone_zfolio_site ) {
+	foreach ( get_sites(
+		array(
+			'fields' => 'ids',
+			'number' => 0,
+		)
+	) as $bristlecone_zfolio_site ) {
 		switch_to_blog( (int) $bristlecone_zfolio_site );
 		bristlecone_zfolio_uninstall_site();
 		restore_current_blog();

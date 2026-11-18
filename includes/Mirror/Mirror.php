@@ -170,8 +170,11 @@ final class Mirror {
 			array(
 				'post_type'      => self::TYPE,
 				'post_parent'    => $post->ID,
-				'orderby'        => array( 'menu_order' => 'ASC', 'title' => 'ASC' ),
-				'posts_per_page' => 500,
+				'orderby'        => array(
+					'menu_order' => 'ASC',
+					'title'      => 'ASC',
+				),
+				'posts_per_page' => 500, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- One folder's children; feeds hold at most 2,000 pages.
 				'no_found_rows'  => true,
 			)
 		);
@@ -234,7 +237,9 @@ final class Mirror {
 			}
 		}
 
-		return $cache[ $connection_id ] = $out;
+		$cache[ $connection_id ] = $out;
+
+		return $out;
 	}
 
 	/**
@@ -449,8 +454,8 @@ final class Mirror {
 				'posts_per_page'   => -1,
 				'no_found_rows'    => true,
 				'suppress_filters' => true,
-				'meta_key'         => self::META_CONN, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_query_meta_key
-				'meta_value'       => $id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_query_meta_value
+				'meta_key'         => self::META_CONN, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_value'       => $id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			)
 		);
 
@@ -485,8 +490,8 @@ final class Mirror {
 				'posts_per_page'   => 1,
 				'no_found_rows'    => true,
 				'suppress_filters' => true,
-				'meta_key'         => self::META_NODE, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_query_meta_key
-				'meta_value'       => $id . '|' . $key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_query_meta_value
+				'meta_key'         => self::META_NODE, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_value'       => $id . '|' . $key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			)
 		);
 

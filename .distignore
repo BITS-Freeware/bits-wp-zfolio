@@ -16,6 +16,8 @@ SECURITY.md
 tests
 phpunit.xml
 phpunit.xml.dist
+phpcs.xml
+phpcs.xml.dist
 .phpunit.cache
 .phpunit.result.cache
 

@@ -62,17 +62,26 @@ final class Sync {
 		$connection = Connections::get( $id );
 
 		if ( null === $connection || '' === $connection['address'] ) {
-			return array( 'ok' => false, 'message' => __( 'This connection has no feed address.', 'bristlecone-zfolio' ) );
+			return array(
+				'ok'      => false,
+				'message' => __( 'This connection has no feed address.', 'bristlecone-zfolio' ),
+			);
 		}
 
 		$state = Connections::state( $id );
 
 		if ( (int) $state['retry_until'] > time() ) {
-			return array( 'ok' => false, 'message' => __( 'zFolio asked the site to wait before the next request. Try again in a minute.', 'bristlecone-zfolio' ) );
+			return array(
+				'ok'      => false,
+				'message' => __( 'zFolio asked the site to wait before the next request. Try again in a minute.', 'bristlecone-zfolio' ),
+			);
 		}
 
 		if ( ! self::lock( $id ) ) {
-			return array( 'ok' => false, 'message' => __( 'An update is already running for this connection.', 'bristlecone-zfolio' ) );
+			return array(
+				'ok'      => false,
+				'message' => __( 'An update is already running for this connection.', 'bristlecone-zfolio' ),
+			);
 		}
 
 		try {
@@ -104,12 +113,24 @@ final class Sync {
 		switch ( $response->outcome ) {
 			case Response::NOT_MODIFIED:
 				Connections::update_state( $id, $common + array( 'last_error' => '' ) + self::reactivate( $id, $state ) );
-				return array( 'ok' => true, 'message' => __( 'No changes since the last update.', 'bristlecone-zfolio' ) );
+				return array(
+					'ok'      => true,
+					'message' => __( 'No changes since the last update.', 'bristlecone-zfolio' ),
+				);
 
 			case Response::RATE_LIMITED:
-				Connections::update_state( $id, $common + array( 'retry_until' => $now + $response->retry_after, 'last_error' => 'rate limited' ) );
+				Connections::update_state(
+					$id,
+					$common + array(
+						'retry_until' => $now + $response->retry_after,
+						'last_error'  => 'rate limited',
+					)
+				);
 				Cron::schedule( $id, $response->retry_after );
-				return array( 'ok' => false, 'message' => __( 'zFolio asked the site to slow down. The next update will wait.', 'bristlecone-zfolio' ) );
+				return array(
+					'ok'      => false,
+					'message' => __( 'zFolio asked the site to slow down. The next update will wait.', 'bristlecone-zfolio' ),
+				);
 
 			case Response::PAUSED:
 			case Response::REVOKED:
@@ -119,7 +140,13 @@ final class Sync {
 					Cache::purge_connection( $id );
 				}
 
-				Connections::update_state( $id, $common + array( 'status' => $status, 'last_error' => '' ) );
+				Connections::update_state(
+					$id,
+					$common + array(
+						'status'     => $status,
+						'last_error' => '',
+					)
+				);
 				return array(
 					'ok'      => false,
 					'message' => 'paused' === $status
@@ -128,37 +155,61 @@ final class Sync {
 				);
 
 			case Response::GONE:
-				Connections::update_state( $id, $common + array( 'gone_current' => $response->current, 'last_error' => 'version retired' ) );
-				return array( 'ok' => false, 'message' => __( 'zFolio no longer serves this version of the feed. Update the plugin.', 'bristlecone-zfolio' ) );
+				Connections::update_state(
+					$id,
+					$common + array(
+						'gone_current' => $response->current,
+						'last_error'   => 'version retired',
+					)
+				);
+				return array(
+					'ok'      => false,
+					'message' => __( 'zFolio no longer serves this version of the feed. Update the plugin.', 'bristlecone-zfolio' ),
+				);
 
 			case Response::NOT_FOUND:
 				// Never take content down on a polling 404 alone.
 				Connections::update_state( $id, $common + array( 'last_error' => 'not found' ) );
-				return array( 'ok' => false, 'message' => __( 'zFolio doesn’t recognize this feed address. If the owner rotated it, paste the new address.', 'bristlecone-zfolio' ) );
+				return array(
+					'ok'      => false,
+					'message' => __( 'zFolio doesn’t recognize this feed address. If the owner rotated it, paste the new address.', 'bristlecone-zfolio' ),
+				);
 
 			case Response::OK:
 				break;
 
 			default:
 				Connections::update_state( $id, $common + array( 'last_error' => $response->message ) );
-				return array( 'ok' => false, 'message' => __( 'zFolio couldn’t be reached. The site keeps showing what it has.', 'bristlecone-zfolio' ) );
+				return array(
+					'ok'      => false,
+					'message' => __( 'zFolio couldn’t be reached. The site keeps showing what it has.', 'bristlecone-zfolio' ),
+				);
 		}
 
 		$manifest = Validator::manifest( (array) $response->data );
 
 		if ( null === $manifest ) {
 			Connections::update_state( $id, $common + array( 'last_error' => 'invalid manifest' ) );
-			return array( 'ok' => false, 'message' => __( 'zFolio sent a feed the plugin can’t read. The site keeps showing what it has.', 'bristlecone-zfolio' ) );
+			return array(
+				'ok'      => false,
+				'message' => __( 'zFolio sent a feed the plugin can’t read. The site keeps showing what it has.', 'bristlecone-zfolio' ),
+			);
 		}
 
 		if ( '' !== $state['feed_id'] && $manifest['feedId'] !== $state['feed_id'] ) {
 			Connections::update_state( $id, $common + array( 'last_error' => 'different feed' ) );
-			return array( 'ok' => false, 'message' => __( 'This address now points at a different feed. Clear the connection’s content before using it.', 'bristlecone-zfolio' ) );
+			return array(
+				'ok'      => false,
+				'message' => __( 'This address now points at a different feed. Clear the connection’s content before using it.', 'bristlecone-zfolio' ),
+			);
 		}
 
 		if ( Plan::is_stale( $manifest['revision'], (int) $state['revision'] ) ) {
 			Connections::update_state( $id, $common + array( 'last_error' => '' ) + self::reactivate( $id, $state ) );
-			return array( 'ok' => true, 'message' => __( 'No changes since the last update.', 'bristlecone-zfolio' ) );
+			return array(
+				'ok'      => true,
+				'message' => __( 'No changes since the last update.', 'bristlecone-zfolio' ),
+			);
 		}
 
 		$stored   = Store::manifest_rows( $id );
@@ -271,7 +322,10 @@ final class Sync {
 			$message .= ' ' . __( 'Some pages could not be fetched this time and will be tried again.', 'bristlecone-zfolio' );
 		}
 
-		return array( 'ok' => '' === $problem, 'message' => $message );
+		return array(
+			'ok'      => '' === $problem,
+			'message' => $message,
+		);
 	}
 
 	/**
@@ -286,11 +340,17 @@ final class Sync {
 		$state      = Connections::state( $id );
 
 		if ( null === $connection || '' === $state['feed_id'] || null === Store::get( $id, $page_id ) ) {
-			return array( 'ok' => false, 'message' => __( 'That page isn’t stored yet. Choose Refresh Now first.', 'bristlecone-zfolio' ) );
+			return array(
+				'ok'      => false,
+				'message' => __( 'That page isn’t stored yet. Choose Refresh Now first.', 'bristlecone-zfolio' ),
+			);
 		}
 
 		if ( (int) $state['retry_until'] > time() || ! self::lock( $id ) ) {
-			return array( 'ok' => false, 'message' => __( 'An update is running or zFolio asked the site to wait. Try again in a minute.', 'bristlecone-zfolio' ) );
+			return array(
+				'ok'      => false,
+				'message' => __( 'An update is running or zFolio asked the site to wait. Try again in a minute.', 'bristlecone-zfolio' ),
+			);
 		}
 
 		try {
@@ -301,7 +361,10 @@ final class Sync {
 			);
 
 			if ( ! $this->store_page( $id, $response, $manifest, $page_id ) ) {
-				return array( 'ok' => false, 'message' => __( 'zFolio didn’t send that page. The site keeps showing what it has.', 'bristlecone-zfolio' ) );
+				return array(
+					'ok'      => false,
+					'message' => __( 'zFolio didn’t send that page. The site keeps showing what it has.', 'bristlecone-zfolio' ),
+				);
 			}
 		} finally {
 			self::unlock( $id );
@@ -311,12 +374,21 @@ final class Sync {
 
 		if ( isset( $failures[ $page_id ] ) ) {
 			unset( $failures[ $page_id ] );
-			Connections::update_state( $id, $failures ? array( 'failures' => $failures ) : array( 'failures' => array(), 'last_error' => '' ) );
+			Connections::update_state(
+				$id,
+				$failures ? array( 'failures' => $failures ) : array(
+					'failures'   => array(),
+					'last_error' => '',
+				)
+			);
 		}
 
 		Cache::purge_pages( $id, array( $page_id ) );
 
-		return array( 'ok' => true, 'message' => __( 'Page updated.', 'bristlecone-zfolio' ) );
+		return array(
+			'ok'      => true,
+			'message' => __( 'Page updated.', 'bristlecone-zfolio' ),
+		);
 	}
 
 	/**
@@ -410,7 +482,14 @@ final class Sync {
 			return false;
 		}
 
-		$taken = $wpdb->update( $wpdb->options, array( 'option_value' => $token ), array( 'option_name' => $name, 'option_value' => $current ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$taken = $wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- compare-and-swap on the lock row.
+			$wpdb->options,
+			array( 'option_value' => $token ),
+			array(
+				'option_name'  => $name,
+				'option_value' => $current,
+			)
+		);
 		wp_cache_delete( $name, 'options' );
 
 		if ( 1 !== $taken ) {
@@ -435,7 +514,13 @@ final class Sync {
 		}
 
 		$name = 'bristlecone_zfolio_lock_' . $id;
-		$wpdb->delete( $wpdb->options, array( 'option_name' => $name, 'option_value' => self::$tokens[ $id ] ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->delete( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- release only the holder's lock row.
+			$wpdb->options,
+			array(
+				'option_name'  => $name,
+				'option_value' => self::$tokens[ $id ],
+			)
+		);
 		wp_cache_delete( $name, 'options' );
 		unset( self::$tokens[ $id ] );
 	}

@@ -145,8 +145,8 @@ final class Sanitizer {
 	 * @param array<string,mixed> $list Allowlist.
 	 */
 	private static function enforce_rules( string $html, array $list ): string {
-		$elements = (array) ( $list['elements'] ?? array() );
-		$global   = (array) ( $list['globalAttributes'] ?? array() );
+		$elements  = (array) ( $list['elements'] ?? array() );
+		$global    = (array) ( $list['globalAttributes'] ?? array() );
 		$required  = (array) ( $list['required'] ?? array() );
 		$protocols = (array) ( $list['protocols'] ?? array() );
 		$tags      = new WP_HTML_Tag_Processor( $html );
@@ -198,7 +198,8 @@ final class Sanitizer {
 				}
 
 				if ( 'class' === $name ) {
-					$tokens = preg_split( '/\s+/', is_string( $value ) ? trim( $value ) : '', -1, PREG_SPLIT_NO_EMPTY ) ?: array();
+					$tokens = preg_split( '/\s+/', is_string( $value ) ? trim( $value ) : '', -1, PREG_SPLIT_NO_EMPTY );
+					$tokens = false === $tokens ? array() : $tokens;
 					$kept   = array_values( array_filter( $tokens, static fn ( string $token ): bool => self::matches( $token, $rule ) ) );
 
 					if ( array() === $kept ) {
@@ -293,7 +294,8 @@ final class Sanitizer {
 
 		foreach ( explode( ',', $srcset ) as $candidate ) {
 			$candidate = trim( $candidate );
-			$parts     = preg_split( '/\s+/', $candidate ) ?: array();
+			$parts     = preg_split( '/\s+/', $candidate );
+			$parts     = false === $parts ? array() : $parts;
 			$url       = $parts[0] ?? '';
 
 			if ( str_starts_with( $url, 'https://' ) && false === strpbrk( $url, '"\'<>' ) ) {

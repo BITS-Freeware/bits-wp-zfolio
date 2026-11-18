@@ -42,10 +42,12 @@ final class Shortcode {
 			self::TAG
 		);
 
+		$classes = preg_split( '/\s+/', (string) $atts['class'], -1, PREG_SPLIT_NO_EMPTY );
+
 		return Render::page(
 			sanitize_key( $atts['connection'] ),
 			sanitize_text_field( $atts['page'] ),
-			implode( ' ', array_map( 'sanitize_html_class', preg_split( '/\s+/', (string) $atts['class'], -1, PREG_SPLIT_NO_EMPTY ) ?: array() ) )
+			implode( ' ', array_map( 'sanitize_html_class', false === $classes ? array() : $classes ) )
 		);
 	}
 }

@@ -225,7 +225,7 @@ final class SettingsPage {
 			$mirror_post = ! empty( $connection['mirror'] ) ? Mirror::find( $id, (string) $row['page_id'] ) : null;
 			$view        = null !== $mirror_post && 'publish' === $mirror_post->post_status ? ' <a href="' . esc_url( (string) get_permalink( $mirror_post ) ) . '">' . esc_html__( 'View', 'bristlecone-zfolio' ) . '</a>' : '';
 
-			echo '<tr><td>' . esc_html( str_repeat( '— ', count( $row['parents'] ) ) . $row['title'] ) . $view . '<br><code>' . esc_html( $row['slug'] ) . '</code></td>';
+			echo '<tr><td>' . esc_html( str_repeat( '— ', count( $row['parents'] ) ) . $row['title'] ) . $view . '<br><code>' . esc_html( $row['slug'] ) . '</code></td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $view is built from esc_url() and esc_html__().
 			echo '<td><code>[zfolio connection="' . esc_html( $id ) . '" page="' . esc_html( $row['page_id'] ) . '"]</code></td>';
 			echo '<td>' . esc_html( self::when( $fetched ) ) . '</td><td>';
 			self::action_button( 'refresh_page', $id, __( 'Refresh', 'bristlecone-zfolio' ), '', '', array( 'page_id' => (string) $row['page_id'] ) );
@@ -438,15 +438,26 @@ final class SettingsPage {
 
 			case 'refresh_page':
 				$page_id = isset( $_POST['page_id'] ) ? sanitize_text_field( wp_unslash( $_POST['page_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- checked above.
-				$result = preg_match( Validator::PAGE_ID, $page_id )
+				$result  = preg_match( Validator::PAGE_ID, $page_id )
 					? ( new Sync() )->refresh_page( $id, $page_id )
-					: array( 'ok' => false, 'message' => __( 'Nothing to do.', 'bristlecone-zfolio' ) );
+					: array(
+						'ok'      => false,
+						'message' => __( 'Nothing to do.', 'bristlecone-zfolio' ),
+					);
 				self::redirect( $result['message'], $result['ok'], array( 'view' => $id ) );
 				break;
 
 			case 'clear':
 				Store::clear( $id );
-				Connections::update_state( $id, array( 'etag' => '', 'revision' => -1, 'feed_id' => '', 'pending' => true ) );
+				Connections::update_state(
+					$id,
+					array(
+						'etag'     => '',
+						'revision' => -1,
+						'feed_id'  => '',
+						'pending'  => true,
+					)
+				);
 				Cache::purge_connection( $id );
 				Cron::schedule( $id, 5 );
 				self::redirect( __( 'Content cleared. It will be fetched again in a moment.', 'bristlecone-zfolio' ), true );
@@ -455,7 +466,15 @@ final class SettingsPage {
 			case 'clear_all':
 				foreach ( array_keys( Connections::all() ) as $each ) {
 					Store::clear( $each );
-					Connections::update_state( $each, array( 'etag' => '', 'revision' => -1, 'feed_id' => '', 'pending' => true ) );
+					Connections::update_state(
+						$each,
+						array(
+							'etag'     => '',
+							'revision' => -1,
+							'feed_id'  => '',
+							'pending'  => true,
+						)
+					);
 					Cache::purge_connection( $each );
 					Cron::schedule( $each, 5 );
 				}
@@ -581,14 +600,21 @@ final class SettingsPage {
 			)
 		);
 
-		if ( $mirror !== ! empty( $existing['mirror'] ) || $mirror_slug !== (string) ( $existing['mirror_slug'] ?? '' ) ) {
+		if ( ! empty( $existing['mirror'] ) !== $mirror || (string) ( $existing['mirror_slug'] ?? '' ) !== $mirror_slug ) {
 			Mirror::request_flush();
 			wp_schedule_single_event( time(), Mirror::HOOK, array( $id ) );
 		}
 
 		if ( $changed ) {
 			// A rotated address serves the same feed; keep content, recheck at once.
-			Connections::update_state( $id, array( 'etag' => '', 'last_error' => '', 'address_rotated' => 0 ) );
+			Connections::update_state(
+				$id,
+				array(
+					'etag'            => '',
+					'last_error'      => '',
+					'address_rotated' => 0,
+				)
+			);
 		}
 
 		if ( $secret_changed || '' === $secret ) {
@@ -614,7 +640,12 @@ final class SettingsPage {
 			$manifest = Validator::manifest( (array) $response->data );
 
 			if ( null === $manifest ) {
-				return array( 'ok' => false, 'outcome' => Response::FAILED, 'feed_id' => '', 'message' => __( 'zFolio answered, but the plugin can’t read the feed.', 'bristlecone-zfolio' ) );
+				return array(
+					'ok'      => false,
+					'outcome' => Response::FAILED,
+					'feed_id' => '',
+					'message' => __( 'zFolio answered, but the plugin can’t read the feed.', 'bristlecone-zfolio' ),
+				);
 			}
 
 			return array(
@@ -650,7 +681,14 @@ final class SettingsPage {
 	 * @param array<string,string> $args    Query args.
 	 */
 	private static function redirect( string $message, bool $ok, array $args = array() ): never {
-		set_transient( self::NOTICE . get_current_user_id(), array( 'message' => $message, 'ok' => $ok ), 60 );
+		set_transient(
+			self::NOTICE . get_current_user_id(),
+			array(
+				'message' => $message,
+				'ok'      => $ok,
+			),
+			60
+		);
 		wp_safe_redirect( self::url( $args ) );
 		exit;
 	}

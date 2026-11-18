@@ -15,7 +15,7 @@ namespace Bristlecone\Zfolio;
  */
 final class Store {
 
-	public const DB_VERSION        = '2';
+	public const DB_VERSION         = '2';
 	private const DB_VERSION_OPTION = 'bristlecone_zfolio_db_version';
 
 	/**
@@ -135,7 +135,7 @@ final class Store {
 			|| $stored['slug'] !== $meta['slug']
 			|| $stored['title'] !== $meta['title']
 			|| $stored['description'] !== $meta['description']
-			|| $stored['parents'] !== (string) wp_json_encode( $meta['parents'] )
+			|| (string) wp_json_encode( $meta['parents'] ) !== $stored['parents']
 			|| $stored['order'] !== (int) $meta['order'];
 	}
 
@@ -207,7 +207,17 @@ final class Store {
 	public static function save_recleaned( string $connection_id, string $page_id, string $html ): void {
 		global $wpdb;
 
-		$wpdb->update( self::table(), array( 'html' => $html, 'sanitizer' => Content\Sanitizer::GENERATION ), array( 'connection_id' => $connection_id, 'page_id' => $page_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- the plugin's own table.
+			self::table(),
+			array(
+				'html'      => $html,
+				'sanitizer' => Content\Sanitizer::GENERATION,
+			),
+			array(
+				'connection_id' => $connection_id,
+				'page_id'       => $page_id,
+			)
+		); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 	}
 
 	/**
@@ -234,7 +244,7 @@ final class Store {
 	/**
 	 * Delete pages of a connection that are not in the list.
 	 *
-	 * @param string       $connection_id Connection id.
+	 * @param string            $connection_id Connection id.
 	 * @param list<string>      $keep          Page ids to keep.
 	 * @param list<string>|null $stored        Stored page ids, when already known.
 	 * @return list<string> Page ids deleted.
@@ -257,7 +267,13 @@ final class Store {
 		global $wpdb;
 
 		foreach ( $page_ids as $page_id ) {
-			$wpdb->delete( self::table(), array( 'connection_id' => $connection_id, 'page_id' => $page_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->delete( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- the plugin's own table.
+				self::table(),
+				array(
+					'connection_id' => $connection_id,
+					'page_id'       => $page_id,
+				)
+			); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		}
 	}
 

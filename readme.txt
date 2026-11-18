@@ -4,7 +4,7 @@ Tags: documentation, knowledge base, docs, feed, content sync
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.3
-Stable tag: 0.1.0
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -74,13 +74,14 @@ No. zFolio sends finished HTML, and the plugin cleans it again with a fixed list
 
 == Changelog ==
 
-= 0.1.0 =
-* First development version: connections, scheduled checks, stored pages, the zFolio Page block and the shortcode.
-* Webhooks: signed instant updates, with pause, turn-off, page removal, and address and secret rotation handled.
+= 1.0.0 =
+* First release.
+* Connect one or more zFolio feeds, checked on a schedule and stored on your site.
+* The zFolio Page block and the `[zfolio]` shortcode.
+* Signed webhooks for instant updates, with pause, turn-off, page removal, and address and secret rotation handled.
 * Mirror mode: a feed's folders and pages as read-only WordPress pages, with redirects when a page moves.
-* Review fixes: a page that keeps failing no longer stops a sync from finishing; feed addresses must be on zFolio's host; image and link URLs keep to the feed contract; stored pages are cleaned again after a sanitizer update; caches are purged for paused feeds wherever their pages appear; a new feed address is checked before it replaces the old one.
 
 == Upgrade Notice ==
 
-= 0.1.0 =
-First development version.
+= 1.0.0 =
+First release.
