@@ -449,12 +449,12 @@ final class Mirror {
 	private static function posts( string $id ): array {
 		$posts = get_posts(
 			array(
-				'post_type'        => self::TYPE,
-				'post_status'      => 'any',
-				'posts_per_page'   => -1,
-				'no_found_rows'    => true,
-				'meta_key'         => self::META_CONN, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				'meta_value'       => $id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'post_type'      => self::TYPE,
+				'post_status'    => 'any',
+				'posts_per_page' => -1,
+				'no_found_rows'  => true,
+				'meta_key'       => self::META_CONN, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_value'     => $id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			)
 		);
 
@@ -484,12 +484,12 @@ final class Mirror {
 	public static function find( string $id, string $key ): ?WP_Post {
 		$posts = get_posts(
 			array(
-				'post_type'        => self::TYPE,
-				'post_status'      => 'any',
-				'posts_per_page'   => 1,
-				'no_found_rows'    => true,
-				'meta_key'         => self::META_NODE, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				'meta_value'       => $id . '|' . $key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'post_type'      => self::TYPE,
+				'post_status'    => 'any',
+				'posts_per_page' => 1,
+				'no_found_rows'  => true,
+				'meta_key'       => self::META_NODE, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_value'     => $id . '|' . $key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			)
 		);
 

@@ -231,7 +231,7 @@ final class Store {
 		global $wpdb;
 
 		$table = self::table();
-		$rows  = $wpdb->get_results( $wpdb->prepare( "SELECT page_id, slug FROM %i WHERE connection_id = %s", $table, $connection_id ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$rows  = $wpdb->get_results( $wpdb->prepare( 'SELECT page_id, slug FROM %i WHERE connection_id = %s', $table, $connection_id ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 
 		$out = array();
 
@@ -301,7 +301,7 @@ final class Store {
 
 		$table  = self::table();
 		$column = str_starts_with( $page, 'pg_' ) ? 'page_id' : 'slug';
-		$row    = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM %i WHERE connection_id = %s AND %i = %s", $table, $connection_id, $column, $page ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$row    = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE connection_id = %s AND %i = %s', $table, $connection_id, $column, $page ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 
 		return is_array( $row ) ? self::decode( $row ) : null;
 	}
