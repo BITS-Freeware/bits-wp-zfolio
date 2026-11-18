@@ -70,7 +70,7 @@ final class SettingsPage {
 
 		add_submenu_page(
 			$parent_slug,
-			__( 'zFolio for WordPress', 'bristlecone-zfolio' ),
+			__( 'zFolio', 'bristlecone-zfolio' ),
 			__( 'zFolio', 'bristlecone-zfolio' ),
 			'manage_options',
 			self::PAGE_SLUG,
@@ -130,7 +130,7 @@ final class SettingsPage {
 		// phpcs:enable
 
 		echo '<div class="wrap">';
-		echo '<h1>' . esc_html__( 'zFolio for WordPress', 'bristlecone-zfolio' ) . '</h1>';
+		echo '<h1>' . esc_html__( 'zFolio', 'bristlecone-zfolio' ) . '</h1>';
 
 		self::flash();
 
@@ -729,10 +729,10 @@ final class SettingsPage {
 
 			if ( (int) $state['gone_current'] > 0 || 'version retired' === $state['last_error'] ) {
 				/* translators: %s: connection name. */
-				$lines[] = sprintf( __( '%s: zFolio retired this version of its feed. Update zFolio for WordPress to keep the content current.', 'bristlecone-zfolio' ), $name );
+				$lines[] = sprintf( __( '%s: zFolio retired this version of its feed. Update the zFolio plugin to keep the content current.', 'bristlecone-zfolio' ), $name );
 			} elseif ( '' !== $state['sunset'] || '' !== $state['deprecation'] ) {
 				/* translators: %s: connection name. */
-				$lines[] = sprintf( __( '%s: zFolio will retire this version of its feed. Update zFolio for WordPress before then.', 'bristlecone-zfolio' ), $name );
+				$lines[] = sprintf( __( '%s: zFolio will retire this version of its feed. Update the zFolio plugin before then.', 'bristlecone-zfolio' ), $name );
 			}
 
 			if ( (int) $state['address_rotated'] > 0 ) {
@@ -764,7 +764,7 @@ final class SettingsPage {
 			return;
 		}
 
-		echo '<div class="notice notice-warning"><p><strong>' . esc_html__( 'zFolio for WordPress', 'bristlecone-zfolio' ) . '</strong></p><ul style="list-style:disc;padding-left:2em">';
+		echo '<div class="notice notice-warning"><p><strong>' . esc_html__( 'zFolio', 'bristlecone-zfolio' ) . '</strong></p><ul style="list-style:disc;padding-left:2em">';
 		foreach ( $lines as $line ) {
 			echo '<li>' . esc_html( $line ) . '</li>';
 		}

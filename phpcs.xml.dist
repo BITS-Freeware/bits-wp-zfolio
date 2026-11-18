@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<ruleset name="zFolio for WordPress">
-	<description>WordPress coding standards for zFolio for WordPress.</description>
+<ruleset name="zFolio">
+	<description>WordPress coding standards for the zFolio plugin.</description>
 
 	<file>.</file>
 	<exclude-pattern>/vendor/*</exclude-pattern>

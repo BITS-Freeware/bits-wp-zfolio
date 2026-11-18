@@ -1,6 +1,6 @@
 <?php
 /**
- * Uninstall zFolio for WordPress: remove its table, options, events and post
+ * Uninstall the zFolio plugin: remove its table, options, events and post
  * meta from every site.
  *
  * @package BristleconeZfolio

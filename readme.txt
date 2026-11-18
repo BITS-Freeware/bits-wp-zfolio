@@ -1,4 +1,4 @@
-=== zFolio for WordPress ===
+=== zFolio ===
 Contributors: bristleconeit
 Tags: documentation, knowledge base, docs, feed, content sync
 Requires at least: 6.4
@@ -12,7 +12,7 @@ Show documents and folders you write in zFolio on your WordPress site, styled by
 
 == Description ==
 
-zFolio for WordPress is the official zFolio plugin for WordPress. Write documentation and other content in zFolio, then show it on your site with a block or a shortcode. Your theme handles the look.
+This is the official zFolio plugin for WordPress. Write documentation and other content in zFolio, then show it on your site with a block or a shortcode. Your theme handles the look.
 
 * **Connect a document or a folder.** In zFolio, choose Connect to WordPress and paste the feed address into Bristlecone → zFolio. A site can have several connections.
 * **Only published content.** Pages change on your site only when you choose Update in zFolio, so drafts never appear.
