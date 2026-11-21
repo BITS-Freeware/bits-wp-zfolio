@@ -43,7 +43,7 @@ The plugin's readme may name these:
   "revision": 12,
   "updatedAt": "2026-11-07T11:00:00.000Z",
   "allowlistVersion": 1,
-  "homePageId": "pg_abcdefghijklmnopqrstuvwxyz",
+  "homePageId": null,
   "folders": [
     { "id": "fl_abcdefghijklmnopqrstuvwxyz", "title": "Setup", "parents": [], "order": 0, "indexPageId": null }
   ],
@@ -70,7 +70,7 @@ The plugin's readme may name these:
 - `kind`: `document` (one page) or `folder`.
 - `revision`: an integer that only grows. It rises with every change to what the feed serves: an Update that changes anything, and a page hidden, shown again, or deleted outside an Update. A webhook whose `revision` is at or below the one you have is stale.
 - `allowlistVersion`: the HTML allowlist the pages keep to (below).
-- `homePageId`: the feed's front page, an "index" or "README" document (any case, `.md` optional) at the top of the feed's folder, or `null`. It can name any page of the feed.
+- `homePageId`: the feed's front page, an "index" or "README" document (any case, `.md` optional) at the top of the feed's folder, or `null`. zFolio sets it only to a page at the top today, but read it as naming any page of the feed.
 - `folders[]`: the folders below the feed's own folder that hold pages, each with an opaque id (`fl_` and 26 base32 characters), its name, its own folders' ids, outermost first, and `order`. The feed's own folder is not listed. `indexPageId` is the folder's landing page, an "index" or "README" document directly in it, or `null`. Folders come in the order of their first pages.
 - `pages[]`, in the owner's order: the front page first, then the pages a `_sidebar` document at the top of the feed's folder lists, in its order, then the rest, each folder's by front matter `order` (a number, smallest first), then by title, with numbers in titles compared as numbers. This is the order a zFolio site uses.
   - `id`: opaque, `pg_` and 26 base32 characters, unique within the feed, the same for the same document for the feed's whole life, whatever its title or folder. Never zFolio's own document id.
@@ -78,7 +78,7 @@ The plugin's readme may name these:
   - `parents`: the page's folders' ids, outermost first; `[]` at the top.
   - `title` and `description` are plain text. The description is the document's front matter `description` when it has one, otherwise its first paragraph, cut near 200 characters. `updatedAt` and every other time are RFC 3339 in UTC.
   - `hash`: changes whenever the page's content does. Refetch a page only when its hash changed.
-  - `noindex`: `true` when the document's front matter says `noindex: true`, asking search engines to leave the page out. A change to it alone raises the revision and lists the page in `changed`, but leaves `hash` as it is.
+  - `noindex`: `true` when the document's front matter says `noindex: true` (or `yes`, in any case), asking search engines to leave the page out. A change to it alone raises the revision and lists the page in `changed`, but leaves `hash` as it is.
 - `nav[]`: the feed's bar of links, from a `_nav` document at the top of the feed's folder: up to 12, each `{ "title", "pageId" }` or `{ "title", "url" }` (an `https` address), with up to 12 `children` of the same shape, one level down. Titles are at most 100 characters. A link to a page that left the feed or is in the Trash is left out. Empty when there's no `_nav`.
 - `_sidebar` and `_nav` documents at the top of the feed's folder are never pages.
 - `homePageId`, `indexPageId`, `noindex`, and `children` arrived in zFolio 0.103.0. A feed not updated since then sends `null`, `null`, `false`, and none until its owner chooses Update.
@@ -159,7 +159,7 @@ A webhook tells the site its feed changed, so it fetches the manifest at once in
   - `feed.rotated`: `data.what` is `address` (with `graceUntil` when the old address keeps working) or `secret` (with `previousUntil`, sent only to the endpoint whose secret rolled, signed with both).
   - `feed.test`: sent when the owner chooses Test.
 - Headers: `Content-Type: application/json`, `User-Agent: zFolio-Webhooks/1 (+https://zfolio.cc)`, `zFolio-Event-Id`, `zFolio-Event-Type`, and `zFolio-Signature: t=<unix seconds>,v1=<signature>`. The signature is lowercase hex HMAC-SHA256, keyed with the secret string's UTF-8 bytes, over `t + "." + raw body`. Every attempt is signed with a fresh `t`. While a secret is rolled, events carry a second `v1=` signed with the previous secret, until the owner confirms the new one or 7 days pass. Reject a `t` more than 5 minutes off, compare in constant time, accept the event if any `v1=` matches, and drop an event `id` seen in the last 25 hours.
-- Turning an endpoint back on: when the owner turns on an endpoint that was off, it gets one event at once with the feed's state, `feed.updated` with the current `revision` and empty `changed` and `removed` (or `feed.paused` while paused), so a site that checks only on webhooks catches up. Fetch the manifest and compare hashes as for any `feed.updated`.
+- Turning an endpoint back on: when the owner turns on an endpoint that was off, for a feed that has served something, it gets one event at once with the feed's state, `feed.updated` with the current `revision` and empty `changed` and `removed` (or `feed.paused` while paused), so a site that checks only on webhooks catches up. Fetch the manifest and compare hashes as for any `feed.updated`.
 - Delivery: an event the owner's action causes is sent right after it; one from a document trashed or deleted, or from the daily plan check, is sent within the hour. The endpoint has 5 seconds. Redirects are not followed. A `2xx` is delivered. `401`, `404`, and `410` turn the endpoint off at once. Anything else (a timeout, `429`, `5xx`, a redirect) is retried with backoff (about 1, 2, 4, then every 6 hours) for 24 hours, then the endpoint turns off. The owner sees why in zFolio and can turn it on again. The response body is ignored; answer `202` quickly and fetch afterwards.
 - Test vectors, including a rolled secret's two signatures: [`test-vectors/signatures.json`](test-vectors/signatures.json). The first: the secret `zfwh_0123456789abcdefghijklmnopqrstuvwxyzABCDEFG`, `t` `1794000000`, and body `{"id":"evt_test"}` sign to `d92c01018b7af0a59010b4fd4ca5638ef9f8a450f303a590e6b81d6181c8138d`.
 
