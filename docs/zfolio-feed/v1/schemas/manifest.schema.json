@@ -47,6 +47,14 @@
       "type": "integer",
       "minimum": 1
     },
+    "homePageId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^pg_[a-z2-7]{26}$",
+      "description": "The front page: an \"index\" or \"README\" document at the top of the feed's folder, or null. Sent since zFolio 0.103.0; absent from older answers."
+    },
     "folders": {
       "type": "array",
       "items": {
@@ -76,6 +84,14 @@
           "order": {
             "type": "integer",
             "minimum": 0
+          },
+          "indexPageId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^pg_[a-z2-7]{26}$",
+            "description": "The folder's landing page: an \"index\" or \"README\" document directly in it, or null. Sent since zFolio 0.103.0."
           }
         }
       }
@@ -134,6 +150,10 @@
           "lang": {
             "type": "string",
             "description": "Optional; not sent yet."
+          },
+          "noindex": {
+            "type": "boolean",
+            "description": "The page's front matter asks search engines to leave it out. Sent since zFolio 0.103.0."
           }
         }
       }
@@ -147,7 +167,8 @@
         ],
         "properties": {
           "title": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 100
           },
           "pageId": {
             "type": "string",
@@ -155,7 +176,46 @@
           },
           "url": {
             "type": "string",
-            "format": "uri"
+            "format": "uri",
+            "pattern": "^https://"
+          },
+          "children": {
+            "type": "array",
+            "maxItems": 12,
+            "description": "Nested links, one level down: each a title with a pageId or a url, never children of its own. Sent since zFolio 0.103.0.",
+            "items": {
+              "type": "object",
+              "required": [
+                "title"
+              ],
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "pageId": {
+                  "type": "string",
+                  "pattern": "^pg_[a-z2-7]{26}$"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri",
+                  "pattern": "^https://"
+                }
+              },
+              "oneOf": [
+                {
+                  "required": [
+                    "pageId"
+                  ]
+                },
+                {
+                  "required": [
+                    "url"
+                  ]
+                }
+              ]
+            }
           }
         },
         "oneOf": [
@@ -170,7 +230,8 @@
             ]
           }
         ]
-      }
+      },
+      "maxItems": 12
     }
   }
 }
