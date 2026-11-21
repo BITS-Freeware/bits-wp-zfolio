@@ -48,6 +48,10 @@
       },
       "description": "The folders the item is in, outermost first; empty at the top."
     },
+    "noindex": {
+      "type": "boolean",
+      "description": "The page's front matter asks search engines to leave it out; the manifest's value is the one to trust, since a 304 can carry an older one. Sent since zFolio 0.103.0."
+    },
     "html": {
       "type": "string",
       "description": "Sanitized HTML within the allowlist named by the manifest's allowlistVersion (kses-allowlist.json)."
