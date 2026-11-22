@@ -56,7 +56,7 @@ final class Sync {
 	 *
 	 * @param string $id    Connection id.
 	 * @param bool   $force Ignore the stored ETag (Refresh now).
-	 * @return array{ok:bool,message:string}
+	 * @return array{ok:bool,message:string,busy?:bool,retry?:bool} busy: another sync holds the lock; retry: a failure worth retrying soon.
 	 */
 	public function run( string $id, bool $force = false ): array {
 		$connection = Connections::get( $id );
@@ -81,6 +81,7 @@ final class Sync {
 			return array(
 				'ok'      => false,
 				'message' => __( 'An update is already running for this connection.', 'bristlecone-zfolio' ),
+				'busy'    => true,
 			);
 		}
 
@@ -98,7 +99,7 @@ final class Sync {
 	 * @param array<string,mixed> $connection Settings.
 	 * @param array<string,mixed> $state      State.
 	 * @param bool                $force      Ignore the ETag.
-	 * @return array{ok:bool,message:string}
+	 * @return array{ok:bool,message:string,retry?:bool}
 	 */
 	private function sync( string $id, array $connection, array $state, bool $force ): array {
 		$etag     = ( $force || $state['pending'] ) ? '' : (string) $state['etag'];
@@ -183,6 +184,7 @@ final class Sync {
 				return array(
 					'ok'      => false,
 					'message' => __( 'zFolio couldn’t be reached. The site keeps showing what it has.', 'bristlecone-zfolio' ),
+					'retry'   => true,
 				);
 		}
 
@@ -193,6 +195,7 @@ final class Sync {
 			return array(
 				'ok'      => false,
 				'message' => __( 'zFolio sent a feed the plugin can’t read. The site keeps showing what it has.', 'bristlecone-zfolio' ),
+				'retry'   => true,
 			);
 		}
 

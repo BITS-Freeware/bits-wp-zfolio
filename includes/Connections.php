@@ -18,7 +18,31 @@ final class Connections {
 	public const OPTION       = 'bristlecone_zfolio_connections';
 	public const STATE_OPTION = 'bristlecone_zfolio_state';
 
-	public const INTERVALS = array( 5, 15, 30, 60 );
+	/**
+	 * Check for Updates choices, in minutes, in the order the screen lists
+	 * them. 0 means only when zFolio sends a webhook.
+	 */
+	public const INTERVALS = array( 5, 15, 30, 60, self::DAILY, self::WEEKLY, self::WEBHOOK_ONLY );
+
+	/**
+	 * Only when zFolio sends a webhook: no scheduled checks.
+	 */
+	public const WEBHOOK_ONLY = 0;
+
+	/**
+	 * Once a day, in minutes.
+	 */
+	public const DAILY = 1440;
+
+	/**
+	 * Once a week, in minutes.
+	 */
+	public const WEEKLY = 10080;
+
+	/**
+	 * Days without a good webhook before a webhook-only connection warns.
+	 */
+	public const QUIET_DAYS = 7;
 
 	/**
 	 * Every connection's settings, keyed by id.
@@ -142,6 +166,7 @@ final class Connections {
 			'address_rotated'   => 0,
 			'secret_rotated'    => 0,
 			'failures'          => array(),
+			'retries'           => 0,
 		);
 	}
 
@@ -190,6 +215,36 @@ final class Connections {
 	}
 
 	/**
+	 * Whether a connection may use webhook-only: it has a webhook secret and
+	 * has received at least one correctly signed event with it.
+	 *
+	 * @param array<string,mixed> $connection Settings.
+	 * @param array<string,mixed> $state      State.
+	 */
+	public static function can_use_webhook_only( array $connection, array $state ): bool {
+		return '' !== (string) ( $connection['webhook_secret'] ?? '' ) && (int) ( $state['last_webhook'] ?? 0 ) > 0;
+	}
+
+	/**
+	 * Whether a webhook-only connection has gone too long without a good
+	 * webhook. A quiet feed sends none either, so this is a prompt to check,
+	 * not proof of a fault.
+	 *
+	 * @param array<string,mixed> $connection Settings.
+	 * @param array<string,mixed> $state      State.
+	 * @param int                 $now        Unix time.
+	 */
+	public static function webhook_quiet( array $connection, array $state, int $now ): bool {
+		if ( self::WEBHOOK_ONLY !== (int) ( $connection['interval'] ?? 15 ) ) {
+			return false;
+		}
+
+		$last = (int) ( $state['last_webhook'] ?? 0 );
+
+		return $last <= 0 || $now - $last > self::QUIET_DAYS * DAY_IN_SECONDS;
+	}
+
+	/**
 	 * Settings with defaults filled in.
 	 *
 	 * @param array<string,mixed> $connection Settings.
@@ -220,6 +275,11 @@ final class Connections {
 
 		if ( ! Webhook\Signature::valid_secret( (string) $connection['webhook_secret'] ) ) {
 			$connection['webhook_secret'] = '';
+		}
+
+		// Webhook-only needs a webhook to listen for.
+		if ( self::WEBHOOK_ONLY === $connection['interval'] && '' === $connection['webhook_secret'] ) {
+			$connection['interval'] = 15;
 		}
 
 		return $connection;
