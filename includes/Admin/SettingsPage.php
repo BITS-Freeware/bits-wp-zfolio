@@ -172,7 +172,12 @@ final class SettingsPage {
 			echo '<td><strong><a href="' . esc_url( self::url( array( 'view' => $id ) ) ) . '">' . esc_html( $label ) . '</a></strong><br><code>' . esc_html( Address::mask( (string) $connection['address'] ) ) . '</code></td>';
 			echo '<td>' . esc_html( self::status_text( $state ) ) . '</td>';
 			echo '<td>' . esc_html( number_format_i18n( Store::count( $id ) ) ) . '</td>';
-			echo '<td>' . esc_html( self::when( (int) $state['last_checked'] ) ) . '</td>';
+			echo '<td>' . esc_html( self::when( (int) $state['last_checked'] ) );
+			if ( '' !== $connection['webhook_secret'] ) {
+				/* translators: %s: how long ago, such as "5 minutes ago", or "Never". */
+				echo '<br><small>' . esc_html( sprintf( __( 'Last webhook: %s', 'bristlecone-zfolio' ), self::when( (int) $state['last_webhook'] ) ) ) . '</small>';
+			}
+			echo '<br><small>' . esc_html( self::interval_text( (int) $connection['interval'] ) ) . '</small></td>';
 			echo '<td><code>[zfolio connection="' . esc_html( $id ) . '" page="…"]</code></td>';
 			echo '<td>';
 			self::action_button( 'refresh', $id, __( 'Refresh Now', 'bristlecone-zfolio' ), 'button-primary' );
@@ -275,12 +280,18 @@ final class SettingsPage {
 		echo '<input type="password" class="large-text code" id="zfolio-address" name="address" value="" autocomplete="off" spellcheck="false"' . ( $is_new ? ' required' : '' ) . '>';
 		echo '<p class="description">' . esc_html( $is_new ? __( 'Paste the address from Connect to WordPress in zFolio. It works like a password, so it is hidden once saved.', 'bristlecone-zfolio' ) : __( 'Leave empty to keep the current address. Paste a new one if the owner rotated it.', 'bristlecone-zfolio' ) ) . '</p></td></tr>';
 
-		echo '<tr><th scope="row"><label for="zfolio-interval">' . esc_html__( 'Check for Updates', 'bristlecone-zfolio' ) . '</label></th><td><select id="zfolio-interval" name="interval">';
+		$webhook_only = ! $is_new && Connections::can_use_webhook_only( $connection, Connections::state( (string) $connection['id'] ) );
+		echo '<tr><th scope="row"><label for="zfolio-interval">' . esc_html__( 'Check for Updates', 'bristlecone-zfolio' ) . '</label></th><td><select id="zfolio-interval" name="interval" aria-describedby="zfolio-interval-help">';
 		foreach ( Connections::INTERVALS as $minutes ) {
-			/* translators: %d: minutes. */
-			echo '<option value="' . esc_attr( (string) $minutes ) . '"' . selected( (int) $connection['interval'], $minutes, false ) . '>' . esc_html( sprintf( _n( 'Every %d minute', 'Every %d minutes', $minutes, 'bristlecone-zfolio' ), $minutes ) ) . '</option>';
+			$disabled = Connections::WEBHOOK_ONLY === $minutes && ! $webhook_only;
+			echo '<option value="' . esc_attr( (string) $minutes ) . '"' . selected( (int) $connection['interval'], $minutes, false ) . disabled( $disabled, true, false ) . '>' . esc_html( self::interval_text( $minutes ) ) . '</option>';
 		}
-		echo '</select></td></tr>';
+		echo '</select>';
+		echo '<p class="description" id="zfolio-interval-help">' . esc_html(
+			$webhook_only
+				? __( 'With “Only when zFolio sends a webhook”, the site checks the feed only when a webhook arrives or you choose Refresh Now. If webhooks stop arriving, the content stays as it is, so the plugin warns after 7 days without one.', 'bristlecone-zfolio' )
+				: __( '“Only when zFolio sends a webhook” becomes available once this connection has a webhook secret and has received a webhook signed with it. To send one, choose Test on the endpoint in zFolio.', 'bristlecone-zfolio' )
+		) . '</p></td></tr>';
 
 		echo '<tr><th scope="row">' . esc_html__( 'When the Feed Is Paused or Turned Off', 'bristlecone-zfolio' ) . '</th><td><fieldset>';
 		echo '<label><input type="radio" name="takedown" value="hide"' . checked( $connection['takedown'], 'hide', false ) . '> ' . esc_html__( 'Hide its content', 'bristlecone-zfolio' ) . '</label><br>';
@@ -329,7 +340,7 @@ final class SettingsPage {
 	 */
 	private static function render_webhook_fields( array $connection, bool $is_new ): void {
 		echo '<h2>' . esc_html__( 'Webhooks (Optional)', 'bristlecone-zfolio' ) . '</h2>';
-		echo '<p>' . esc_html__( 'With a webhook, zFolio tells your site the moment you choose Update, instead of waiting for the next check. Scheduled checks keep running either way. Your site must be reachable from the internet over HTTPS.', 'bristlecone-zfolio' ) . '</p>';
+		echo '<p>' . esc_html__( 'With a webhook, zFolio tells your site the moment you choose Update, instead of waiting for the next check. Scheduled checks keep running too, unless Check for Updates is set to “Only when zFolio sends a webhook”. Your site must be reachable from the internet over HTTPS.', 'bristlecone-zfolio' ) . '</p>';
 
 		if ( $is_new ) {
 			echo '<p class="description">' . esc_html__( 'Add the connection first. Its webhook address appears here once it is saved.', 'bristlecone-zfolio' ) . '</p>';
@@ -364,7 +375,7 @@ final class SettingsPage {
 
 		if ( '' !== $secret ) {
 			echo '<tr><th scope="row">' . esc_html__( 'Last Webhook', 'bristlecone-zfolio' ) . '</th><td>';
-			echo esc_html( self::when( (int) $state['last_webhook'] ) );
+			echo esc_html( self::when_exactly( (int) $state['last_webhook'] ) );
 			if ( '' !== (string) $state['last_webhook_type'] ) {
 				echo ' <code>' . esc_html( (string) $state['last_webhook_type'] ) . '</code>';
 			}
@@ -583,8 +594,30 @@ final class SettingsPage {
 			$secret         = $raw_secret;
 		}
 
-		$new = '' === $id;
-		$id  = $new ? Connections::new_id() : $id;
+		$new   = '' === $id;
+		$state = $new ? array() : Connections::state( $id );
+
+		if ( ! in_array( $interval, Connections::INTERVALS, true ) ) {
+			$interval = 15;
+		}
+
+		$interval_note = '';
+
+		if ( Connections::WEBHOOK_ONLY === $interval ) {
+			// A different secret hasn't been proven by a signed event yet.
+			$proven = ! $new && ! $secret_changed && Connections::can_use_webhook_only( array( 'webhook_secret' => $secret ), $state );
+
+			if ( ! $proven ) {
+				$interval      = Connections::WEBHOOK_ONLY === (int) ( $existing['interval'] ?? 15 ) ? 15 : (int) ( $existing['interval'] ?? 15 );
+				$interval_note = ' ' . ( '' === $secret
+					/* translators: %s: the Check for Updates choice used instead, such as "Every 15 minutes". */
+					? sprintf( __( 'Check for Updates is set to “%s”, because webhooks are off for this connection.', 'bristlecone-zfolio' ), self::interval_text( $interval ) )
+					/* translators: %s: the Check for Updates choice used instead, such as "Every 15 minutes". */
+					: sprintf( __( 'Check for Updates is set to “%s” until a webhook signed with this connection’s secret arrives. Choose Test on the endpoint in zFolio, then choose “Only when zFolio sends a webhook” again.', 'bristlecone-zfolio' ), self::interval_text( $interval ) ) );
+			}
+		}
+
+		$id = $new ? Connections::new_id() : $id;
 
 		Connections::save(
 			$id,
@@ -621,10 +654,21 @@ final class SettingsPage {
 			Connections::update_state( $id, array( 'secret_rotated' => 0 ) );
 		}
 
+		if ( $secret_changed ) {
+			// Webhook-only waits for an event signed with the new secret.
+			Connections::update_state(
+				$id,
+				array(
+					'last_webhook'      => 0,
+					'last_webhook_type' => '',
+				)
+			);
+		}
+
 		Cache::purge_connection( $id );
 		Cron::schedule( $id, $new || $changed ? 5 : null );
 
-		self::redirect( $new ? __( 'Connection added. Its pages will be fetched in a moment.', 'bristlecone-zfolio' ) : __( 'Connection saved.', 'bristlecone-zfolio' ), true );
+		self::redirect( ( $new ? __( 'Connection added. Its pages will be fetched in a moment.', 'bristlecone-zfolio' ) : __( 'Connection saved.', 'bristlecone-zfolio' ) ) . $interval_note, true );
 	}
 
 	/**
@@ -751,6 +795,14 @@ final class SettingsPage {
 					: sprintf( __( '%s: the webhook secret was rolled in zFolio. Paste the new secret.', 'bristlecone-zfolio' ), $name );
 			}
 
+			if ( Connections::webhook_quiet( $connection, $state, time() ) ) {
+				$lines[] = (int) $state['last_webhook'] > 0
+					/* translators: 1: connection name, 2: number of days. */
+					? sprintf( __( '%1$s: no webhook has arrived from zFolio in over %2$d days, and this connection checks the feed only when one does. If the feed changed in that time, check the endpoint in zFolio, or choose another Check for Updates setting.', 'bristlecone-zfolio' ), $name, Connections::QUIET_DAYS )
+					/* translators: %s: connection name. */
+					: sprintf( __( '%s: this connection checks the feed only when zFolio sends a webhook, but none has arrived yet. Check the endpoint in zFolio, or choose another Check for Updates setting.', 'bristlecone-zfolio' ), $name );
+			}
+
 			if ( 'paused' === $state['status'] || 'revoked' === $state['status'] ) {
 				$lines[] = 'paused' === $state['status']
 					/* translators: %s: connection name. */
@@ -794,6 +846,35 @@ final class SettingsPage {
 		}
 
 		return $text;
+	}
+
+	/**
+	 * A Check for Updates choice for people.
+	 *
+	 * @param int $minutes Interval in minutes; 0 for webhook-only.
+	 */
+	private static function interval_text( int $minutes ): string {
+		return match ( $minutes ) {
+			Connections::WEBHOOK_ONLY => __( 'Only when zFolio sends a webhook', 'bristlecone-zfolio' ),
+			Connections::DAILY        => __( 'Daily', 'bristlecone-zfolio' ),
+			Connections::WEEKLY       => __( 'Weekly', 'bristlecone-zfolio' ),
+			/* translators: %d: minutes. */
+			default => sprintf( _n( 'Every %d minute', 'Every %d minutes', $minutes, 'bristlecone-zfolio' ), $minutes ),
+		};
+	}
+
+	/**
+	 * "5 minutes ago (November 22, 2026 10:03 am)", or "Never".
+	 *
+	 * @param int $timestamp Unix time.
+	 */
+	private static function when_exactly( int $timestamp ): string {
+		if ( $timestamp <= 0 ) {
+			return __( 'Never', 'bristlecone-zfolio' );
+		}
+
+		/* translators: 1: human time difference, 2: date and time. */
+		return sprintf( __( '%1$s ago (%2$s)', 'bristlecone-zfolio' ), human_time_diff( $timestamp ), wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $timestamp ) );
 	}
 
 	/**

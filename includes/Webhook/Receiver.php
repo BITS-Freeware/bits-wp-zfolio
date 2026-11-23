@@ -21,7 +21,8 @@ use WP_REST_Server;
 /**
  * Checks the signature, drops repeats, acts on the event, and answers `202`
  * at once. Anything that needs the feed is left to a sync that cron starts
- * right away, so zFolio never waits on it. Polling stays on as the backstop.
+ * right away, so zFolio never waits on it. Polling stays on as the backstop,
+ * unless the connection is set to update only when a webhook arrives.
  *
  * Answers: `404` for a connection without webhooks set up and `401` for a
  * bad signature (both turn the endpoint off in zFolio, which is right: the
