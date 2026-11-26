@@ -1142,23 +1142,23 @@
         },
         {
             "name": "roots/wordpress-no-content",
-            "version": "6.4.14",
+            "version": "6.4.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/WordPress/WordPress.git",
-                "reference": "6.4.14"
+                "reference": "6.4.15"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.w.org/release/wordpress-6.4.14-no-content.zip",
-                "reference": "6.4.14",
-                "shasum": "4654f39dba2469a6bb8074c16029c86e05c2b53e"
+                "url": "https://downloads.w.org/release/wordpress-6.4.15-no-content.zip",
+                "reference": "6.4.15",
+                "shasum": "a998415452b31494201dc09aa35afaf358a37a4c"
             },
             "require": {
                 "php": ">= 7.0.0"
             },
             "provide": {
-                "wordpress/core-implementation": "6.4.14"
+                "wordpress/core-implementation": "6.4.15"
             },
             "suggest": {
                 "ext-curl": "Performs remote request operations.",
@@ -1209,7 +1209,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-10-28T22:24:19+00:00"
+            "time": "2026-11-18T20:42:17+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -2372,5 +2372,5 @@
     "platform-overrides": {
         "php": "8.3.0"
     },
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
